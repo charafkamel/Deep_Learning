@@ -1,0 +1,10 @@
+# Ignore data directory
+data/
+
+# Ignore Python cache files/folders
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.log
