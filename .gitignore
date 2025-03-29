@@ -1,5 +1,4 @@
 # Ignore data directory
-data/
 
 # Ignore Python cache files/folders
 __pycache__/
