@@ -1,5 +1,7 @@
 # Ignore data directory
 HateBERT_hateval/
+hatebert-final/
+hatebert-finetuned/
 
 # Ignore Python cache files/folders
 __pycache__/
