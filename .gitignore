@@ -1,4 +1,5 @@
 # Ignore data directory
+HateBERT_hateval/
 
 # Ignore Python cache files/folders
 __pycache__/
