@@ -3,6 +3,8 @@ HateBERT_hateval/
 hatebert-final/
 hatebert-finetuned/
 
+.DS_Store
+
 # Ignore Python cache files/folders
 __pycache__/
 *.pyc
