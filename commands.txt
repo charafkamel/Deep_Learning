@@ -1,0 +1,14 @@
+=============== Create Conda Environment ===============
+conda create -n paradetox python=3.10 -y
+conda activate paradetox
+
+=============== Create Conda Environment ===============
+
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+pip install transformers datasets accelerate
+pip install tokenizers peft bert-score
+pip install evaluate
+pip install scikit-learn
+pip install git+https://github.com/huggingface/transformers
+pip install wandb
