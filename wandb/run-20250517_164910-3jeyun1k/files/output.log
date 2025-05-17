@@ -1,0 +1,101 @@
+  3%|████▊                                                                                                                                                                   | 200/6900 [00:52<1:56:40,  1.04s/it]***** Running Evaluation *****
+{'loss': 10.1209, 'learning_rate': 5e-05, 'epoch': 0.14}
+{'loss': 6.5254, 'learning_rate': 5e-05, 'epoch': 0.29}
+  Num examples = 614
+  Batch size = 16
+  3%|████▊                                                                                                                                                                   | 200/6900 [00:53<1:56:40,  1.04s/it]Saving model checkpoint to outputs/SFT/checkpoint-200
+Configuration saved in outputs/SFT/checkpoint-200/config.json                                                                                                                                                     
+{'eval_loss': 3.2335615158081055, 'eval_runtime': 1.134, 'eval_samples_per_second': 541.464, 'eval_steps_per_second': 34.393, 'epoch': 0.29}
+Model weights saved in outputs/SFT/checkpoint-200/pytorch_model.bin
+  6%|█████████▋                                                                                                                                                              | 400/6900 [01:48<1:52:39,  1.04s/it]***** Running Evaluation *****
+{'loss': 4.6806, 'learning_rate': 5e-05, 'epoch': 0.43}
+{'loss': 3.6864, 'learning_rate': 5e-05, 'epoch': 0.58}
+  Num examples = 614
+  Batch size = 16
+  6%|█████████▋                                                                                                                                                              | 400/6900 [01:49<1:52:39,  1.04s/it]Saving model checkpoint to outputs/SFT/checkpoint-400
+Configuration saved in outputs/SFT/checkpoint-400/config.json                                                                                                                                                     
+{'eval_loss': 1.7034101486206055, 'eval_runtime': 1.1552, 'eval_samples_per_second': 531.526, 'eval_steps_per_second': 33.761, 'epoch': 0.58}
+Model weights saved in outputs/SFT/checkpoint-400/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-200] due to args.save_total_limit
+Deleting older checkpoint [outputs/SFT/checkpoint-600] due to args.save_total_limit
+  9%|██████████████▌                                                                                                                                                         | 600/6900 [02:44<1:31:14,  1.15it/s]***** Running Evaluation *****
+{'loss': 3.1381, 'learning_rate': 5e-05, 'epoch': 0.72}
+{'loss': 2.7865, 'learning_rate': 5e-05, 'epoch': 0.87}
+  Num examples = 614
+  Batch size = 16
+  9%|██████████████▌                                                                                                                                                         | 600/6900 [02:45<1:31:14,  1.15it/s]Saving model checkpoint to outputs/SFT/checkpoint-600
+Configuration saved in outputs/SFT/checkpoint-600/config.json                                                                                                                                                     
+{'eval_loss': 1.50636887550354, 'eval_runtime': 1.1494, 'eval_samples_per_second': 534.18, 'eval_steps_per_second': 33.93, 'epoch': 0.87}
+Model weights saved in outputs/SFT/checkpoint-600/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-400] due to args.save_total_limit
+ 12%|███████████████████▍                                                                                                                                                    | 800/6900 [03:40<1:46:06,  1.04s/it]***** Running Evaluation *****
+{'loss': 2.5576, 'learning_rate': 5e-05, 'epoch': 1.01}
+{'loss': 2.2806, 'learning_rate': 5e-05, 'epoch': 1.16}
+  Num examples = 614
+  Batch size = 16
+ 12%|███████████████████▍                                                                                                                                                    | 800/6900 [03:41<1:46:06,  1.04s/it]Saving model checkpoint to outputs/SFT/checkpoint-800
+Configuration saved in outputs/SFT/checkpoint-800/config.json                                                                                                                                                     
+{'eval_loss': 1.3442176580429077, 'eval_runtime': 1.1338, 'eval_samples_per_second': 541.562, 'eval_steps_per_second': 34.399, 'epoch': 1.16}
+Model weights saved in outputs/SFT/checkpoint-800/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-600] due to args.save_total_limit
+ 14%|████████████████████████▏                                                                                                                                              | 1000/6900 [04:37<1:42:49,  1.05s/it]***** Running Evaluation *****
+{'loss': 2.1598, 'learning_rate': 5e-05, 'epoch': 1.3}
+{'loss': 2.0131, 'learning_rate': 5e-05, 'epoch': 1.45}
+  Num examples = 614
+  Batch size = 16
+ 14%|████████████████████████▏                                                                                                                                              | 1000/6900 [04:38<1:42:49,  1.05s/it]Saving model checkpoint to outputs/SFT/checkpoint-1000
+Configuration saved in outputs/SFT/checkpoint-1000/config.json                                                                                                                                                    
+{'eval_loss': 1.1913211345672607, 'eval_runtime': 1.1327, 'eval_samples_per_second': 542.054, 'eval_steps_per_second': 34.43, 'epoch': 1.45}
+Model weights saved in outputs/SFT/checkpoint-1000/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-800] due to args.save_total_limit
+ 17%|█████████████████████████████                                                                                                                                          | 1200/6900 [05:33<1:39:22,  1.05s/it]***** Running Evaluation *****
+{'loss': 1.9083, 'learning_rate': 5e-05, 'epoch': 1.59}
+{'loss': 1.856, 'learning_rate': 5e-05, 'epoch': 1.74}
+  Num examples = 614
+  Batch size = 16
+ 17%|█████████████████████████████                                                                                                                                          | 1200/6900 [05:34<1:39:22,  1.05s/it]Saving model checkpoint to outputs/SFT/checkpoint-1200
+Configuration saved in outputs/SFT/checkpoint-1200/config.json                                                                                                                                                    
+{'eval_loss': 1.1441798210144043, 'eval_runtime': 1.1376, 'eval_samples_per_second': 539.734, 'eval_steps_per_second': 34.283, 'epoch': 1.74}
+Model weights saved in outputs/SFT/checkpoint-1200/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-1000] due to args.save_total_limit
+ 20%|█████████████████████████████████▉                                                                                                                                     | 1400/6900 [06:30<1:35:55,  1.05s/it]***** Running Evaluation *****
+{'loss': 1.7302, 'learning_rate': 5e-05, 'epoch': 1.88}
+{'loss': 1.6413, 'learning_rate': 5e-05, 'epoch': 2.03}
+  Num examples = 614
+  Batch size = 16
+ 20%|█████████████████████████████████▉                                                                                                                                     | 1400/6900 [06:31<1:35:55,  1.05s/it]Saving model checkpoint to outputs/SFT/checkpoint-1400
+Configuration saved in outputs/SFT/checkpoint-1400/config.json                                                                                                                                                    
+{'eval_loss': 1.1162441968917847, 'eval_runtime': 1.1348, 'eval_samples_per_second': 541.06, 'eval_steps_per_second': 34.367, 'epoch': 2.03}
+Model weights saved in outputs/SFT/checkpoint-1400/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-1200] due to args.save_total_limit
+ 23%|██████████████████████████████████████▋                                                                                                                                | 1600/6900 [07:26<1:33:04,  1.05s/it]***** Running Evaluation *****
+{'loss': 1.6004, 'learning_rate': 5e-05, 'epoch': 2.17}
+{'loss': 1.5579, 'learning_rate': 5e-05, 'epoch': 2.32}
+  Num examples = 614
+  Batch size = 16
+ 23%|██████████████████████████████████████▋                                                                                                                                | 1600/6900 [07:27<1:33:04,  1.05s/it]Saving model checkpoint to outputs/SFT/checkpoint-1600
+Configuration saved in outputs/SFT/checkpoint-1600/config.json                                                                                                                                                    
+{'eval_loss': 1.1084669828414917, 'eval_runtime': 1.1326, 'eval_samples_per_second': 542.106, 'eval_steps_per_second': 34.433, 'epoch': 2.32}
+Model weights saved in outputs/SFT/checkpoint-1600/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-1400] due to args.save_total_limit
+ 26%|███████████████████████████████████████████▌                                                                                                                           | 1800/6900 [08:22<1:28:48,  1.04s/it]***** Running Evaluation *****
+{'loss': 1.4683, 'learning_rate': 5e-05, 'epoch': 2.46}
+{'loss': 1.4634, 'learning_rate': 5e-05, 'epoch': 2.61}
+  Num examples = 614
+  Batch size = 16
+ 26%|███████████████████████████████████████████▌                                                                                                                           | 1800/6900 [08:24<1:28:48,  1.04s/it]Saving model checkpoint to outputs/SFT/checkpoint-1800
+Configuration saved in outputs/SFT/checkpoint-1800/config.json                                                                                                                                                    
+{'eval_loss': 1.0971715450286865, 'eval_runtime': 1.1254, 'eval_samples_per_second': 545.583, 'eval_steps_per_second': 34.654, 'epoch': 2.61}
+Model weights saved in outputs/SFT/checkpoint-1800/pytorch_model.bin
+Deleting older checkpoint [outputs/SFT/checkpoint-1600] due to args.save_total_limit
+ 29%|████████████████████████████████████████████████▉                                                                                                                        | 2000/6900 [08:59<16:00,  5.10it/s]***** Running Evaluation *****
+{'loss': 1.4725, 'learning_rate': 5e-05, 'epoch': 2.75}
+{'loss': 1.4854, 'learning_rate': 5e-05, 'epoch': 2.9}
+  Num examples = 614
+  Batch size = 16
+ 29%|████████████████████████████████████████████████▉                                                                                                                        | 2000/6900 [09:00<16:00,  5.10it/s]Saving model checkpoint to outputs/SFT/checkpoint-2000
+Configuration saved in outputs/SFT/checkpoint-2000/config.json                                                                                                                                                    
+{'eval_loss': 1.111674189567566, 'eval_runtime': 0.8328, 'eval_samples_per_second': 737.305, 'eval_steps_per_second': 46.832, 'epoch': 2.9}
+Model weights saved in outputs/SFT/checkpoint-2000/pytorch_model.bin
+ 31%|█████████████████████████████████████████████████████                                                                                                                    | 2168/6900 [09:30<11:32,  6.84it/s]
+{'loss': 1.4269, 'learning_rate': 5e-05, 'epoch': 3.04}

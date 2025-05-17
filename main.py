@@ -12,7 +12,6 @@ def load_config(config_path="main_config.yml"):
         return yaml.safe_load(file)
 
 
-
 def main(args):
     
     # Load configuration from YAML
@@ -40,6 +39,17 @@ def main(args):
             config=config,
             logger=logger
         )
+
+        #device = custom_trainer.model.device if hasattr(custom_trainer.model, "device") else custom_trainer.trainer.args.device
+        #batch = next(iter(custom_trainer.trainer.get_train_dataloader()))
+        #batch = {k: v.to(device) for k, v in batch.items()}
+        #outputs = custom_trainer.model(**batch)
+        #print("⚠ raw model outputs.loss:", outputs.loss)
+        #print("⚠ batch labels stats:", 
+        #      batch["labels"].unique()[:10], 
+        #      "count of -100:", (batch["labels"] == -100).sum().item(), 
+        #      "total tokens:", batch["labels"].numel())
+        
         custom_trainer.trainer.train(resume_from_checkpoint=False)
     
     if rl:

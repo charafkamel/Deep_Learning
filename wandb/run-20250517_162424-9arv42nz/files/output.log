@@ -1,0 +1,32 @@
+  0%|                                                                                                                                                                                          | 0/6900 [00:00<?, ?it/s]/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py:1808: FutureWarning: Non-finite norm encountered in torch.nn.utils.clip_grad_norm_; continuing anyway. Note that the default behavior will change in a future release to error out if a non-finite total norm is encountered. At that point, setting error_if_nonfinite=false will be required to retain the old behavior.
+  nn.utils.clip_grad_norm_(
+  2%|████▏                                                                                                                                                                           | 166/6900 [00:37<22:43,  4.94it/s]/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/torch/optim/lr_scheduler.py:129: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+{'loss': 0.0, 'learning_rate': 0.0004, 'epoch': 0.14}
+  warnings.warn("Detected call of `lr_scheduler.step()` before `optimizer.step()`. "
+  3%|█████                                                                                                                                                                         | 200/6900 [00:45<1:00:33,  1.84it/s]***** Running Evaluation *****
+{'loss': 0.0, 'learning_rate': 0.0004, 'epoch': 0.29}
+  Num examples = 614
+  Batch size = 16
+  3%|█████                                                                                                                                                                         | 200/6900 [00:46<1:00:33,  1.84it/s]Saving model checkpoint to outputs/SFT/checkpoint-200
+Configuration saved in outputs/SFT/checkpoint-200/config.json                                                                                                                                                           
+{'eval_loss': nan, 'eval_runtime': 1.5139, 'eval_samples_per_second': 405.564, 'eval_steps_per_second': 25.761, 'epoch': 0.29}
+Model weights saved in outputs/SFT/checkpoint-200/pytorch_model.bin
+/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py:1808: FutureWarning: Non-finite norm encountered in torch.nn.utils.clip_grad_norm_; continuing anyway. Note that the default behavior will change in a future release to error out if a non-finite total norm is encountered. At that point, setting error_if_nonfinite=false will be required to retain the old behavior.
+  nn.utils.clip_grad_norm_(
+  5%|████████                                                                                                                                                                        | 316/6900 [01:14<23:30,  4.67it/s]Traceback (most recent call last):
+{'loss': 0.0, 'learning_rate': 0.0004, 'epoch': 0.43}
+  File "main.py", line 59, in <module>
+    main(args)
+  File "main.py", line 42, in main
+    custom_trainer.trainer.train(resume_from_checkpoint=False)
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py", line 1521, in train
+    return inner_training_loop(
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py", line 1763, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py", line 2509, in training_step
+    self.scaler.scale(loss).backward()
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/torch/_tensor.py", line 255, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/torch/autograd/__init__.py", line 147, in backward
+    Variable._execution_engine.run_backward(
+KeyboardInterrupt

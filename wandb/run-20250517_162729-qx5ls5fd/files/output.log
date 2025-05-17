@@ -1,0 +1,19 @@
+  0%|                                                                                                                                                                                          | 0/6900 [00:00<?, ?it/s]/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py:1808: FutureWarning: Non-finite norm encountered in torch.nn.utils.clip_grad_norm_; continuing anyway. Note that the default behavior will change in a future release to error out if a non-finite total norm is encountered. At that point, setting error_if_nonfinite=false will be required to retain the old behavior.
+  nn.utils.clip_grad_norm_(
+  2%|███▏                                                                                                                                                                            | 127/6900 [00:28<22:53,  4.93it/s]Traceback (most recent call last):
+{'loss': 0.0, 'learning_rate': 0.004, 'epoch': 0.14}
+  File "main.py", line 59, in <module>
+    main(args)
+  File "main.py", line 42, in main
+    custom_trainer.trainer.train(resume_from_checkpoint=False)
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py", line 1521, in train
+    return inner_training_loop(
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py", line 1763, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/transformers/trainer.py", line 2509, in training_step
+    self.scaler.scale(loss).backward()
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/torch/_tensor.py", line 255, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "/scratch/students/2025-spring-sp-tarhan/miniconda3/envs/detox/lib/python3.8/site-packages/torch/autograd/__init__.py", line 147, in backward
+    Variable._execution_engine.run_backward(
+KeyboardInterrupt
