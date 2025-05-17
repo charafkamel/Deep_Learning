@@ -1,0 +1,1 @@
+{"eval/samples_per_second":402.965,"eval/loss":NaN,"_runtime":137.115628828,"train/grad_norm":NaN,"train/global_step":500,"_step":6,"train/loss":0,"_timestamp":1.7474943142881646e+09,"eval/steps_per_second":25.596,"eval/runtime":1.5237,"_wandb":{"runtime":157},"train/learning_rate":0,"train/epoch":2.8927536231884057}

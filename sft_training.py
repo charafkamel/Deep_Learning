@@ -40,7 +40,7 @@ def main(args):
             config=config,
             logger=logger
         )
-        custom_trainer.trainer.train()
+        custom_trainer.trainer.train(resume_from_checkpoint=False)
     
     if rl:
         logger.info("Starting RL training...")

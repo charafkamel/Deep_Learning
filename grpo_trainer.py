@@ -9,6 +9,7 @@ from transformers import AutoTokenizer, AutoModel, AutoModelForSeq2SeqLM, AutoMo
 from datasets import Dataset
 from datasets import load_dataset
 from data_processing import load_dataset_from_disk
+from transformers import DataCollatorForSeq2Seq
 
 
 def load_config(config_path="main_config.yml"):
@@ -56,7 +57,7 @@ class CustomGRPOTrainer:
 
     def _init_datasets(self):
         ### Load the dataset from disk the rl_dataset
-        self.config["dataset_path"] = os.path.join(os.getcwd(), "data", "cleaned_data", "rl_dataset")
+        self.config["dataset_path"] = os.path.join(os.getcwd(), "cleaned_data", "rl_dataset")
 
     def _init_data_collator(self):
         self.data_collator = DataCollatorForSeq2Seq(
@@ -90,7 +91,7 @@ class CustomGRPOTrainer:
             config=self.grpo_config,
         )
 
-    def train(self, total_steps=None):
+    def train(self, total_steps=10000, resume_from_checkpoint=False):
         # Run GRPO training
         self.trainer.train(total_steps=total_steps)
         # Save outputs

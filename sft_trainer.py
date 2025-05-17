@@ -7,13 +7,15 @@ from datasets import load_from_disk
 from helpers import user_login
 from logger import CustomLogger
 from data_processing import load_dataset_from_disk
+from transformers import DataCollatorForSeq2Seq
+
 
 class CustomTrainer:
     def __init__(self, model_name="google/t5-v1_1-base", config=None, logger=None):
         self.config = config
         self.logger = logger
         self.load_model_and_tokenizer(model_name)
-        self.train_dataset, self.eval_dataset = self.preprocess_and_split_dataset()
+        self.preprocess_and_split_dataset()
         self.setup_training_args_and_trainer()
 
 
@@ -34,7 +36,7 @@ class CustomTrainer:
         if self.logger:
             self.logger.info("Loading dataset from disk and preprocessing")
         # load the dataset from disk
-        self.config["dataset_path"] = os.path.join(os.getcwd(), "data", "cleaned_data", "sft_dataset")
+        self.config["dataset_path"] = os.path.join(os.getcwd(), "cleaned_data", "sft_dataset")
         dataset = load_from_disk(self.config["dataset_path"])
 
         ## Mapper
@@ -56,22 +58,24 @@ class CustomTrainer:
             self.logger.info("Setting up training arguments")
 
         self.training_args = Seq2SeqTrainingArguments(**self.config["sft_params"])
-
+        import os
+        os.environ["BITSANDBYTES_CUDA_VERSION"] = "none"
         self.trainer = Seq2SeqTrainer(
             model = self.model,
             args = self.training_args,
             train_dataset = self.train_dataset,
             eval_dataset = self.eval_dataset,
-            tokenizer = self.tokenizer,
+            data_collator = DataCollatorForSeq2Seq(tokenizer=self.tokenizer),
+            #tokenizer = self.tokenizer,
     )
 
     ## 4) Train the model
-    def train(self):
+    def train(self, resume_from_checkpoint=False):
         if self.logger:
             self.logger.info("Starting training")
 
         # run the training loop
-        self.trainer.train()
+        self.trainer.train(resume_from_checkpoint)
 
         final_epoch = int(self.trainer.state.epoch or 0)
         out_dir = os.path.join(self.trainer.args.output_dir, f"e{final_epoch}")

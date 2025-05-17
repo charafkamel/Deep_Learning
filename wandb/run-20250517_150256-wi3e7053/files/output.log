@@ -1,0 +1,28 @@
+  0%|                                                                                                                               | 0/1720 [00:00<?, ?it/s]Passing a tuple of `past_key_values` is deprecated and will be removed in Transformers v4.48.0. You should pass an instance of `EncoderDecoderCache` instead, e.g. `past_key_values=EncoderDecoderCache.from_legacy_cache(past_key_values)`.
+ 34%|███████████████████████████████████████▍                                                                             | 579/1720 [02:36<04:53,  3.88it/s]Traceback (most recent call last):
+{'loss': 0.0, 'grad_norm': nan, 'learning_rate': 0.0, 'epoch': 0.58}
+{'loss': 0.0, 'grad_norm': nan, 'learning_rate': 0.0, 'epoch': 1.16}
+  File "/pvc/home/DeepLearning/Project/Deep_Learning/sft_training.py", line 60, in <module>                                                                  
+{'eval_loss': nan, 'eval_runtime': 1.5173, 'eval_samples_per_second': 404.675, 'eval_steps_per_second': 25.704, 'epoch': 1.16}
+{'loss': 0.0, 'grad_norm': nan, 'learning_rate': 0.0, 'epoch': 1.74}
+{'loss': 0.0, 'grad_norm': nan, 'learning_rate': 0.0, 'epoch': 2.31}
+{'eval_loss': nan, 'eval_runtime': 1.5237, 'eval_samples_per_second': 402.965, 'eval_steps_per_second': 25.596, 'epoch': 2.31}
+{'loss': 0.0, 'grad_norm': nan, 'learning_rate': 0.0, 'epoch': 2.89}
+    main(args)
+  File "/pvc/home/DeepLearning/Project/Deep_Learning/sft_training.py", line 43, in main
+    custom_trainer.trainer.train()
+  File "/home/charaf/.local/lib/python3.10/site-packages/transformers/trainer.py", line 2245, in train
+    return inner_training_loop(
+  File "/home/charaf/.local/lib/python3.10/site-packages/transformers/trainer.py", line 2560, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+  File "/home/charaf/.local/lib/python3.10/site-packages/transformers/trainer.py", line 3782, in training_step
+    self.accelerator.backward(loss, **kwargs)
+  File "/home/charaf/.local/lib/python3.10/site-packages/accelerate/accelerator.py", line 2450, in backward
+    self.scaler.scale(loss).backward(**kwargs)
+  File "/home/charaf/.local/lib/python3.10/site-packages/torch/_tensor.py", line 626, in backward
+    torch.autograd.backward(
+  File "/home/charaf/.local/lib/python3.10/site-packages/torch/autograd/__init__.py", line 347, in backward
+    _engine_run_backward(
+  File "/home/charaf/.local/lib/python3.10/site-packages/torch/autograd/graph.py", line 823, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+KeyboardInterrupt
