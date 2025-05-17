@@ -1,0 +1,6 @@
+models/
+__pycache__/
+data/
+cleaned_data/
+detoxifier/
+outputs/
