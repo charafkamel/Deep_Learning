@@ -1,0 +1,52 @@
+sft_peft: True
+sft_params:
+  output_dir: "outputs/SFT"
+  logging_dir: "outputs/logs_sft"
+  learning_rate: 0.0004
+  num_train_epochs: 10
+  lr_scheduler_type: "linear"
+  weight_decay: 0.01
+  optim: "adamw_8bit"
+  fp16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_ratio: 0.05
+  predict_with_generate: True
+
+  #batch
+  per_device_train_batch_size: 16
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 1
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  
+  # output_dir: "../results/SFT"
+  # Hub
+  push_to_hub: False
+  load_best_model_at_end: True
+
+grpo_params:
+  output_dir: "outputs/GRPO"
+  logging_dir: "outputs/logs_grpo"
+  learning_rate: 0.0004
+  num_train_epochs: 10
+  lr_scheduler_type: "linear"
+  weight_decay: 0.01
+  optim: "adamw_8bit"
+  fp16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_ratio: 0.05
+  predict_with_generate: True
+
+  #batch
+  per_device_train_batch_size: 16
+  per_device_eval_batch_size: 16
