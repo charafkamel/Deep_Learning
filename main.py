@@ -5,6 +5,7 @@ from helpers import user_login
 from logger import CustomLogger
 from data_processing import process_dataset_and_split
 from sft_trainer import CustomTrainer
+from custom_count_trainer import CustomCountTrainer
 
 def load_config(config_path="main_config.yml"):
     """Load configuration from YAML file."""
@@ -26,6 +27,7 @@ def main(args):
     ## parse sft and rl from args
     sft = args.sft
     rl = args.rl
+    count = args.count
     if not sft and not rl:
         logger.error("Both SFT and RL training are disabled. What to do? :D")
 
@@ -55,7 +57,18 @@ def main(args):
     if rl:
         logger.info("Starting RL training...")
         logger.error("RL training is not implemented yet.")
-
+    
+    if count:
+        logger.info("Starting COUNT-based detoxification training...")
+        count_trainer = CustomCountTrainer(
+            model_name="google/t5-v1_1-base",
+            tox_model_name="unitary/toxic-bert",
+            config=config,
+            logger=logger
+        )
+        
+        count_trainer.trainer.train(resume_from_checkpoint=False)
+        logger.info("COUNT-based detoxification training completed.")
     exit(-1)
 
 if __name__ == "__main__":
@@ -64,8 +77,9 @@ if __name__ == "__main__":
     ### Add a help message for each argument
     import argparse
     parser = argparse.ArgumentParser(description="Run SFT and RL training.")
-    parser.add_argument("--sft", type=bool, default=True, help="Run SFT training")
-    parser.add_argument("--rl", type=bool, default=True, help="Run RL training")
+    parser.add_argument("--sft", type=bool, default=False, help="Run SFT training")
+    parser.add_argument("--rl", type=bool, default=False, help="Run RL training")
+    parser.add_argument("--count", type=bool, default=False, help="Run custom COUNT-based training")
     args = parser.parse_args()
     main(args)
 
