@@ -1,7 +1,10 @@
 sft_peft: True
-sft_params:
-  output_dir: "outputs/SFT"
-  logging_dir: "outputs/logs_sft"
+mle_weight:   0.5
+ul_weight:    0.5
+tox_weight:   1.0
+sft_params_base:
+  output_dir: "outputs/SFT_base"
+  logging_dir: "outputs/logs_sft_base"
   learning_rate: 0.00005
   num_train_epochs: 10
   lr_scheduler_type: "constant"
@@ -27,11 +30,106 @@ sft_params:
   
   #eval
   eval_steps: 200
-  evaluation_strategy: "steps"  # Ensure evaluations occur during training
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
+  load_best_model_at_end: True
+
+sft_params_count:
+  output_dir: "outputs/SFT_count"
+  logging_dir: "outputs/logs_sft_count"
+  learning_rate: 0.00005
+  num_train_epochs: 10
+  lr_scheduler_type: "constant"
+  weight_decay: 0.01
+  fp16: False
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_steps: 5
+  predict_with_generate: False
+  report_to: ["wandb"]
+  logging_steps: 10
   
-  # output_dir: "../lts/SFT"
-  # Hub
-  push_to_hub: False
+
+  #batch
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 1
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
+  load_best_model_at_end: True
+
+sft_params_generative_base:
+  output_dir: "outputs/SFT_generative_base"
+  logging_dir: "outputs/logs_sft_generative_base"
+  learning_rate: 0.00005
+  num_train_epochs: 10
+  lr_scheduler_type: "constant"
+  weight_decay: 0.01
+  fp16: False
+  bf16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_steps: 5
+  report_to: ["wandb"]
+  logging_steps: 10
+
+  #batch
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 1
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
+  load_best_model_at_end: True
+
+sft_params_generative_count:
+  output_dir: "outputs/SFT_generative_count"
+  logging_dir: "outputs/logs_sft_generative_count"
+  learning_rate: 0.00005
+  num_train_epochs: 3
+  lr_scheduler_type: "constant"
+  weight_decay: 0.01
+  fp16: False
+  bf16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_steps: 5
+  report_to: ["wandb"]
+  logging_steps: 10
+  
+
+  #batch
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 1
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
   load_best_model_at_end: True
 
 grpo_params:
@@ -41,50 +139,3 @@ grpo_params:
   entropy_penalty: 0.01
   per_device_train_batch_size: 16
   per_device_eval_batch_size: 16
-
-count_params:
-  output_dir: "outputs/COUNT"
-  logging_dir: "outputs/logs_count"
-  learning_rate: 3e-5
-  num_train_epochs: 20
-  per_device_train_batch_size: 16
-  per_device_eval_batch_size: 16
-  predict_with_generate: False
-  save_total_limit: 1
-  logging_steps: 100
-  save_strategy: "steps"
-  save_steps: 200
-  eval_steps: 200
-  evaluation_strategy: "steps"
-  # COUNT loss hyperparameters
-  mle_weight:   0.5
-  ul_weight:    0.5
-  tox_weight:   1.0
-
-
-count_params:
-  output_dir: "outputs/COUNT"
-  logging_dir: "outputs/logs_count"
-  learning_rate: 0.00003
-  num_train_epochs: 20
-  per_device_train_batch_size: 16
-  per_device_eval_batch_size: 16
-  eval_steps: 200
-  save_steps: 200
-  save_total_limit: 1
-  logging_steps: 100
-  push_to_hub: False
-  fp16: False
-  report_to: []  # or remove this line entirely
-  # evaluation_strategy: "steps"
-  # save_strategy: "steps"
-  # predict_with_generate: True
-  # load_best_model_at_end: False
-  # report_to: ["wandb"]
-  
-
-# COUNT loss-specific weights
-mle_weight: 0.5
-ul_weight: 0.5
-tox_weight: 1.0
-log_interval: 200

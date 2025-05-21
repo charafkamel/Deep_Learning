@@ -1,18 +1,18 @@
 import os
 import torch
 from transformers import (
-    T5Tokenizer,
-    T5ForConditionalGeneration,
-    Seq2SeqTrainingArguments,
-    DataCollatorForSeq2Seq,
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    AutoModelForSequenceClassification,
+    TrainingArguments,
+    DataCollatorWithPadding,
+    Trainer,
 )
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from datasets import load_from_disk
 from logger import CustomLogger
-from transformers import Seq2SeqTrainer
 
 
-class COUNTLossTrainer(Seq2SeqTrainer):
+class COUNTLossTrainerGenerative(Trainer):
     def __init__(self, *args, tokenizer=None, tox_tokenizer=None, tox_model=None, loss_weights=None, log_interval=50, **kwargs):
         super().__init__(*args, **kwargs)
         self.tokenizer = tokenizer
@@ -23,7 +23,6 @@ class COUNTLossTrainer(Seq2SeqTrainer):
         self._step_count = 0
 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-        # make sure the toxicity classifier lives where the seq2seq model lives
         tox_dev = next(self.tox_model.parameters()).device
         if tox_dev != model.device:
             self.tox_model.to(model.device)
@@ -54,18 +53,13 @@ class COUNTLossTrainer(Seq2SeqTrainer):
 
         # 3. Toxicity penalty
         with torch.no_grad():
-            input_ids = input_ids.to(model.device)
-            attention_mask = attention_mask.to(model.device)
+            gen_ids = model.generate(input_ids=input_ids, attention_mask=attention_mask, max_length=256)
 
-            gen_ids = model.generate(input_ids=input_ids, attention_mask=attention_mask, max_length=64)
-            
-            # Clamp invalid ids (temporary patch)
             gen_ids = torch.where(gen_ids >= self.tokenizer.vocab_size,
-                                torch.tensor(self.tokenizer.pad_token_id, device=gen_ids.device),
-                                gen_ids)
+                                  torch.tensor(self.tokenizer.pad_token_id, device=gen_ids.device),
+                                  gen_ids)
 
             gen_texts = self.tokenizer.batch_decode(gen_ids, skip_special_tokens=True)
-
 
             tox_inputs = self.tox_tokenizer(gen_texts, return_tensors="pt", truncation=True, padding=True)
             tox_inputs = {k: v.to(model.device) for k, v in tox_inputs.items()}
@@ -86,47 +80,40 @@ class COUNTLossTrainer(Seq2SeqTrainer):
         return (total_loss, outputs) if return_outputs else total_loss
 
 
-class CustomCountTrainer:
-    def __init__(self, model_name="t5-small", tox_model_name="unitary/toxic-bert", config=None, logger=None):
+class CustomGenerativeCountTrainer:
+    def __init__(self, model_name="Qwen/Qwen1.5-0.5B", tox_model_name="unitary/toxic-bert", config=None, logger=None):
         self.config = config or {}
         self.logger = logger or CustomLogger(__name__)
 
-        # Load model and tokenizer
-        self.tokenizer = T5Tokenizer.from_pretrained(model_name)
-        self.model = T5ForConditionalGeneration.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer.pad_token = self.tokenizer.eos_token  # needed for decoder-only models
 
-        # Load toxicity classifier
+        self.model = AutoModelForCausalLM.from_pretrained(model_name)
+
         self.tox_tokenizer = AutoTokenizer.from_pretrained(tox_model_name)
-        self.tox_model = AutoModelForSequenceClassification.from_pretrained(tox_model_name).eval().to(self.model.device)
-        
+        self.tox_model = AutoModelForSequenceClassification.from_pretrained(tox_model_name).eval()
+
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
         self.tox_model.to(device)
 
-        # Load dataset
         dataset_path = self.config.get("dataset_path", os.path.join(os.getcwd(), "cleaned_data", "sft_dataset"))
         dataset = load_from_disk(dataset_path)
 
         def preprocess(example):
             input_text = "detoxify: " + example["toxic"]
             target_text = example["neutral"]
-            model_input = self.tokenizer(input_text, max_length=64, padding="max_length", truncation=True)
-            with self.tokenizer.as_target_tokenizer():
-                label_enc = self.tokenizer(target_text, max_length=64, padding="max_length", truncation=True)
-            labels = [l if l != self.tokenizer.pad_token_id else -100 for l in label_enc["input_ids"]]
-            return {
-                "input_ids": model_input["input_ids"],
-                "attention_mask": model_input["attention_mask"],
-                "labels": labels
-            }
+            full_text = input_text + " " + target_text
+            enc = self.tokenizer(full_text, max_length=128, padding="max_length", truncation=True)
+            enc["labels"] = [t if t != self.tokenizer.pad_token_id else -100 for t in enc["input_ids"]]
+            return enc
 
         tokenized = dataset.map(preprocess, remove_columns=dataset.column_names)
         split = tokenized.train_test_split(test_size=self.config.get("eval_split", 0.1), seed=self.config.get("seed", 42))
         self.train_dataset = split["train"]
         self.eval_dataset = split["test"]
 
-        count_params = self.config.get("count_params", {})
-        self.training_args = Seq2SeqTrainingArguments(**count_params)
+        count_params = self.config.get("sft_params_generative_count", {})
 
         self.loss_weights = {
             "mle": self.config.get("mle_weight", 0.5),
@@ -134,12 +121,21 @@ class CustomCountTrainer:
             "tox": self.config.get("tox_weight", 1.0)
         }
 
-        self.trainer = COUNTLossTrainer(
+        self.model_name_for_hub = model_name.split("/")[-1].replace("/", "-")
+        self.new_model_name = f"TarhanE/sft-base_loss-{self.model_name_for_hub}-mle{self.loss_weights['mle']}-ul{self.loss_weights['ul']}-tox{self.loss_weights['tox']}-e{self.config['sft_params_generative_count']['num_train_epochs']}"
+
+        self.training_args = TrainingArguments(
+            **count_params,
+            hub_model_id=self.new_model_name,
+            run_name=self.new_model_name
+        )
+
+        self.trainer = COUNTLossTrainerGenerative(
             model=self.model,
             args=self.training_args,
             train_dataset=self.train_dataset,
             eval_dataset=self.eval_dataset,
-            data_collator=DataCollatorForSeq2Seq(tokenizer=self.tokenizer),
+            data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer),
             tokenizer=self.tokenizer,
             tox_tokenizer=self.tox_tokenizer,
             tox_model=self.tox_model,
@@ -156,4 +152,10 @@ class CustomCountTrainer:
         self.trainer.save_model(out_dir)
         self.tokenizer.save_pretrained(out_dir)
         self.logger.info(f"[CountTrainer] Model & tokenizer saved to {out_dir}")
+        self.trainer.push_to_hub(
+            repo_id=self.new_model_name,
+            commit_message="Pushing model to Hugging Face Hub",
+            blocking=True,
+            private=True
+        )
         return out_dir

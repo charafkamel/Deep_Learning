@@ -10,10 +10,11 @@ from data_processing import load_dataset_from_disk
 from transformers import DataCollatorForSeq2Seq
 
 
-class CustomTrainer:
+class SFTTrainerBase:
     def __init__(self, model_name="google/t5-v1_1-base", config=None, logger=None):
         self.config = config
         self.logger = logger
+        self.model_name = model_name
         self.load_model_and_tokenizer(model_name)
         self.preprocess_and_split_dataset()
         self.setup_training_args_and_trainer()
@@ -59,7 +60,10 @@ class CustomTrainer:
         if self.logger:
             self.logger.info("Setting up training arguments")
 
-        self.training_args = Seq2SeqTrainingArguments(**self.config["sft_params"])
+        self.model_name_for_hub = self.model_name.split("/")[-1]
+        self.new_model_name = f"TarhanE/sft-base_loss-{self.model_name_for_hub}-mle{0}-ul{0}-tox{0}-e{self.config['sft_params_generative_base']['num_train_epochs']}"
+        self.training_args = Seq2SeqTrainingArguments(**self.config["sft_params_base"], hub_model_id=self.new_model_name,
+            run_name=  self.new_model_name)
         import os
         os.environ["BITSANDBYTES_CUDA_VERSION"] = "none"
         self.trainer = Seq2SeqTrainer(
