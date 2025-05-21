@@ -17,7 +17,7 @@ def load_config(config_path="main_config.yml"):
     with open(config_path, "r") as file:
         return yaml.safe_load(file)
 
-class CustomGRPOTrainer:
+class CustomSeq2SeqRLTrainer:
     def __init__(
         self,
         df_dict,
@@ -32,8 +32,8 @@ class CustomGRPOTrainer:
 
         # Initialize components
         self._init_tokenizers_and_models()
-        self._init_loss_fn()
         self._init_datasets()
+        self._init_loss_fn()
         self._init_data_collator()
         self._init_grpo_trainer()
 
@@ -49,6 +49,7 @@ class CustomGRPOTrainer:
         self.tox_mod = AutoModelForSequenceClassification.from_pretrained(self.tox_model_name)
 
     def _init_loss_fn(self):
+        self.categorical_weights = None
         self.loss_fn = SimilarityToxicityLoss(
             categorical_weights=self.categorical_weights,
             w_sim=1.0,
@@ -57,7 +58,8 @@ class CustomGRPOTrainer:
 
     def _init_datasets(self):
         ### Load the dataset from disk the rl_dataset
-        self.config["dataset_path"] = os.path.join(os.getcwd(), "cleaned_data", "rl_dataset")
+        rl_dataset_path = os.path.join(os.getcwd(), "cleaned_data", "rl_dataset")
+        self.rl_dataset = load_dataset_from_disk(self.rl_dataset_path)
 
     def _init_data_collator(self):
         self.data_collator = DataCollatorForSeq2Seq(
@@ -79,6 +81,7 @@ class CustomGRPOTrainer:
         kl_vals = (logprobs - ref_logprobs).sum(dim=-1)  # tensor (B,)
         # reward: negative loss - KL
         rewards = -loss_vals.detach() - self.grpo_config.lambda_kl * kl_vals.detach()
+        logger.debug(f"Rewards: {rewards}")
         return rewards.tolist()
 
     def _init_grpo_trainer(self):

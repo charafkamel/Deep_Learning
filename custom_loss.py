@@ -18,29 +18,26 @@ from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassific
 class SimilarityToxicityLoss(nn.Module):
     def __init__(
         self,
-        categorical_weights: dict,
+        config,
         w_sim: float = 1.0,
         w_tox: float = 1.0,
-        device: str = None
+        device: str = None,
+        logger = None
     ):
-        self.cat_wts = categorical_weights
-        self.initialize_models_and_tokenizers()
-        
         super().__init__()
-
-
-        # device
+        logger.debug(f"{config.keys()}")
+        logger.error(f"{config['categorical_weights']}")
+        self.cat_wts = config["categorical_weights"]
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(device)
-        
-        self.sim_mod.to(self.device)
-        self.tox_mod.to(self.device)
+        self.logger = logger
+        self.initialize_models_and_tokenizers()
 
         # toxicity weights
         label2id = self.tox_mod.config.label2id
         w = torch.zeros(len(label2id), dtype=torch.float)
-        for lab, wt in categorical_weights.items():
+        for lab, wt in self.cat_wts.items():
             w[label2id[lab]] = wt
         w = w / w.sum()
         self.register_buffer("tox_weights", w)
@@ -53,15 +50,9 @@ class SimilarityToxicityLoss(nn.Module):
         self.tox_mod = AutoModelForSequenceClassification.from_pretrained("unitary/toxic-bert").eval()
         self.sim_tok = AutoTokenizer.from_pretrained("princeton-nlp/sup-simcse-bert-base-uncased")
         self.sim_mod = AutoModel.from_pretrained("princeton-nlp/sup-simcse-bert-base-uncased").eval()
-        if not self.cat_wts:
-            self.cat_wts = {
-                'toxic': 1,
-                'severe_toxic': 0,
-                'obscene': 0,
-                'threat': 0,
-                'insult': 0,
-                'identity_hate': 0
-            }    
+        self.sim_mod.to(self.device)
+        self.tox_mod.to(self.device)
+
     def forward(self, orig_sentences, new_sentences):
         # ensure lists
         if isinstance(orig_sentences, str):

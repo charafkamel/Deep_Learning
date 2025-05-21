@@ -22,12 +22,11 @@ class SimilarityToxicityLoss(nn.Module):
         w_sim: float = 1.0,
         w_tox: float = 1.0,
         device: str = None
-    ):
+    ):  
+        super().__init__()
         self.cat_wts = categorical_weights
         self.initialize_models_and_tokenizers()
         
-        super().__init__()
-
 
         # device
         if device is None:

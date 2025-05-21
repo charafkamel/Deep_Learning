@@ -21,23 +21,38 @@ sft_params:
   
   # logging
   logging_steps: 100
-  save_steps: 200
+  save_steps: 100
   save_strategy: "steps"  # Match save and eval strategies
   save_total_limit: 1
   
   #eval
-  eval_steps: 200
-  evaluation_strategy: "steps"  # Ensure evaluations occur during training
+  eval_steps: 100
+  eval_strategy: "steps"  # Ensure evaluations occur during training
   
   # output_dir: "../lts/SFT"
   # Hub
   push_to_hub: False
   load_best_model_at_end: True
 
-grpo_params:
-  group_size: 8
-  clipping_eps: 0.1
-  lambda_kl: 0.1
-  entropy_penalty: 0.01
+ppo_params:
+  output_dir: "outputs/PPO"
+  num_train_epochs: 3
+  logging_steps: 10
+  #num_generations: 4
+  weight_decay: 0.01
+  lr_scheduler_type: "constant"
+  warmup_steps: 5
+  max_grad_norm: 1
+  fp16: False
+  fp16_backend: "auto"
+  learning_rate: 0.00005
   per_device_train_batch_size: 16
   per_device_eval_batch_size: 16
+
+categorical_weights:
+  toxic: 1
+  severe_toxic: 0
+  obscene: 0
+  threat: 0
+  insult: 0
+  identity_hate: 0  

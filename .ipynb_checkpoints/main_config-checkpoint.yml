@@ -27,7 +27,7 @@ sft_params:
   
   #eval
   eval_steps: 200
-  evaluation_strategy: "steps"  # Ensure evaluations occur during training
+  eval_strategy: "steps"  # Ensure evaluations occur during training
   
   # output_dir: "../lts/SFT"
   # Hub
