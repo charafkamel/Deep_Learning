@@ -13,6 +13,7 @@ def load_tokens(yaml_file):
     Returns:
         dict: Dictionary with loaded tokens
     """
+    print(f"Loading tokens from {yaml_file}")
     with open(yaml_file, 'r') as file:
         tokens = yaml.safe_load(file)
     return tokens
@@ -60,7 +61,8 @@ def wandb_login(wb_token: str):
         print(f"Error logging into WandB: {e}")
 
 def user_login(logger="", path_to_src=""):
-    
+    path_to_src = os.getcwd()
+    print(f"Path to source: {path_to_src}")
     token_filepath = os.path.join(path_to_src, "tokens.yaml")
     print(f"Token file path: {token_filepath}")
     # Load tokens from YAML file

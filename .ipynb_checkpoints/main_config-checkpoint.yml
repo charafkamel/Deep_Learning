@@ -31,7 +31,7 @@ sft_params:
   
   # output_dir: "../lts/SFT"
   # Hub
-  push_to_hub: False
+  push_to_hub: True
   load_best_model_at_end: True
 
 grpo_params:

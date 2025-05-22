@@ -81,7 +81,7 @@ class COUNTLossTrainerGenerative(Trainer):
 
 
 class CustomGenerativeCountTrainer:
-    def __init__(self, model_name="Qwen/Qwen1.5-0.5B", tox_model_name="unitary/toxic-bert", config=None, logger=None):
+    def __init__(self, model_name="Qwen/Qwen3-0.6B", tox_model_name="unitary/toxic-bert", config=None, logger=None):
         self.config = config or {}
         self.logger = logger or CustomLogger(__name__)
 
@@ -122,7 +122,7 @@ class CustomGenerativeCountTrainer:
         }
 
         self.model_name_for_hub = model_name.split("/")[-1].replace("/", "-")
-        self.new_model_name = f"TarhanE/sft-base_loss-{self.model_name_for_hub}-mle{self.loss_weights['mle']}-ul{self.loss_weights['ul']}-tox{self.loss_weights['tox']}-e{self.config['sft_params_generative_count']['num_train_epochs']}"
+        self.new_model_name = f"TarhanE/sft-count_loss-{self.model_name_for_hub}-mle{self.loss_weights['mle']}-ul{self.loss_weights['ul']}-tox{self.loss_weights['tox']}-e{self.config['sft_params_generative_count']['num_train_epochs']}"
 
         self.training_args = TrainingArguments(
             **count_params,

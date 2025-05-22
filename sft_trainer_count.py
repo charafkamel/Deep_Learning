@@ -134,7 +134,7 @@ class CustomCountTrainer:
         }
 
         self.model_name_for_hub = model_name.split("/")[-1]
-        self.new_model_name = f"TarhanE/sft-base_loss-{self.model_name_for_hub}-mle{self.loss_weights['mle']}-ul{self.loss_weights['ul']}-tox{self.loss_weights['tox']}-e{self.config['sft_params_count']['num_train_epochs']}"
+        self.new_model_name = f"TarhanE/sft-count_loss-{self.model_name_for_hub}-mle{self.loss_weights['mle']}-ul{self.loss_weights['ul']}-tox{self.loss_weights['tox']}-e{self.config['sft_params_count']['num_train_epochs']}"
         self.training_args = Seq2SeqTrainingArguments(**count_params, hub_model_id=self.new_model_name,
             run_name=  self.new_model_name)
         self.trainer = COUNTLossTrainer(
