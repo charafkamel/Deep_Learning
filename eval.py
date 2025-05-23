@@ -2,7 +2,6 @@
 # -- coding: utf-8 --
 
 import os
-import yaml
 import torch
 import pandas as pd
 import torch.nn.functional as F
@@ -70,56 +69,53 @@ def score_toxicity_and_similarity(results):
     sim_tok = AutoTokenizer.from_pretrained("princeton-nlp/sup-simcse-bert-base-uncased")
     sim_mod = AutoModel.from_pretrained("princeton-nlp/sup-simcse-bert-base-uncased").to(device).eval()
 
-    texts = [r["original_toxic"] for r in results] + \
-            [r["reference_neutral"] for r in results] + \
-            [r["generated_neutral"] for r in results]
+    origs = [r["original_toxic"] for r in results]
+    refs  = [r["reference_neutral"] for r in results]
+    gens  = [r["generated_neutral"] for r in results]
 
     with torch.no_grad():
-        tox_inputs = tox_tok(texts, return_tensors="pt", truncation=True, padding=True).to(device)
+        # toxicity
+        tox_inputs = tox_tok(origs + refs + gens, return_tensors="pt", truncation=True, padding=True).to(device)
         tox_logits = tox_mod(**tox_inputs).logits
         tox_probs = torch.sigmoid(tox_logits)
 
-        sim_inputs = sim_tok(texts, return_tensors="pt", truncation=True, padding=True).to(device)
+        # similarity
+        sim_inputs = sim_tok(origs + refs + gens, return_tensors="pt", truncation=True, padding=True).to(device)
         emb_all = sim_mod(**sim_inputs).pooler_output
 
     n = len(results)
+    tox_orig, tox_ref, tox_gen = tox_probs[:n], tox_probs[n:2*n], tox_probs[2*n:]
+    sim_orig, sim_ref, sim_gen = emb_all[:n], emb_all[n:2*n], emb_all[2*n:]
+
     for i, r in enumerate(results):
-        r["toxicity_ref"] = float(tox_probs[n+i][tox_label])
-        r["toxicity_gen"] = float(tox_probs[2*n+i][tox_label])
-        r["similarity_orig_ref"] = float(F.cosine_similarity(emb_all[i], emb_all[n+i], dim=0).item())
-        r["similarity_orig_gen"] = float(F.cosine_similarity(emb_all[i], emb_all[2*n+i], dim=0).item())
-    return results
-
-def score_fluency(results):
-    lm_tok = AutoTokenizer.from_pretrained("gpt2")
-    if lm_tok.pad_token is None:
-        lm_tok.pad_token = lm_tok.eos_token
-    lm_mod = AutoModelForCausalLM.from_pretrained("gpt2").to(device).eval()
-
-    for r in results:
-        for key in ["reference_neutral", "generated_neutral"]:
-            enc = lm_tok(r[key], return_tensors="pt", truncation=True, padding=True).to(device)
-            with torch.no_grad():
-                loss = lm_mod(**enc, labels=enc["input_ids"]).loss.item()
-            r[f"fluency_{'ref' if key == 'reference_neutral' else 'gen'}"] = loss
+        r["toxicity_orig"] = float(tox_orig[i][tox_label])
+        r["toxicity_ref"] = float(tox_ref[i][tox_label])
+        r["toxicity_gen"] = float(tox_gen[i][tox_label])
+        r["similarity_orig_ref"] = float(F.cosine_similarity(sim_orig[i], sim_ref[i], dim=0).item())
+        r["similarity_orig_gen"] = float(F.cosine_similarity(sim_orig[i], sim_gen[i], dim=0).item())
     return results
 
 def evaluate_model(model_id, eval_data):
     results = generate_outputs(model_id, eval_data)
     results = score_toxicity_and_similarity(results)
-    results = score_fluency(results)
 
     df = pd.DataFrame(results)[[
         "original_toxic",
+        "toxicity_orig",
         "reference_neutral",
         "toxicity_ref",
         "similarity_orig_ref",
-        "fluency_ref",
         "generated_neutral",
         "toxicity_gen",
-        "similarity_orig_gen",
-        "fluency_gen"
+        "similarity_orig_gen"
     ]]
+    df.rename(columns={
+        "toxicity_orig": "toxicity_original",
+        "toxicity_ref": "toxicity_reference",
+        "toxicity_gen": "toxicity_generated",
+        "similarity_orig_ref": "similarity_original_reference",
+        "similarity_orig_gen": "similarity_original_generated"
+    }, inplace=True)
     return df
 
 def main():
@@ -132,10 +128,9 @@ def main():
         return
 
     print(f"📚 Loading evaluation dataset...")
-
     eval_ds  = load_dataset_from_disk("test_dataset")
-    n_trials = 20
-    eval_data  = eval_ds.shuffle(seed=42).select(range(n_trials))
+    #n_trials = 20
+    eval_data  = eval_ds.shuffle(seed=42)
 
     all_dfs = []
 
@@ -153,7 +148,6 @@ def main():
         print("✅ Saved all results to: detoxification_evaluation_all.csv")
     else:
         print("❌ No evaluations completed.")
-
 
 if __name__ == "__main__":
     main()
