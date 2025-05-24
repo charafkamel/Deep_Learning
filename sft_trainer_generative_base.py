@@ -45,7 +45,7 @@ class SFTGenerativeTrainerBase:
             return {"text": full_text}
 
         tokenized_dataset = dataset.map(_preprocess, remove_columns=dataset.column_names)
-        split = tokenized_dataset.train_test_split(test_size=0.1)
+        split = tokenized_dataset.train_test_split(test_size=self.config.get("eval_split", 0.1), seed=self.config.get("seed", 42))
         self.train_dataset, self.eval_dataset = split["train"], split["test"]
 
     # 3) SFTTrainer with SFTTrainingArguments

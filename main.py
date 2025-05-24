@@ -4,6 +4,7 @@ import yaml
 from helpers import user_login
 from logger import CustomLogger
 from data_processing import process_dataset_and_split
+print(os.getcwd())
 from sft_trainer_base import SFTTrainerBase
 from sft_trainer_count import CustomCountTrainer
 from sft_trainer_generative_base import SFTGenerativeTrainerBase

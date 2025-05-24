@@ -5,3 +5,23 @@ runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:v0.2 --gpu 1 
 runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:v0.2 --gpu 1 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home test-job --command -- sh -c "cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && pip install flash-attn==2.7.3 && pip install sentencepiece && python sft_training.py"
 
 runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home test-job --command -- sh -c "cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && pip install flash-attn==2.7.3 && pip install sentencepiece && sleep 72000"
+
+
+
+### Run training
+
+## base
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home base --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --base"
+
+## count
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home count --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --count"
+
+
+## base_generative
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home base-generative --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --base_generative"
+
+## count_generative
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home count-generative --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --count_generative"
+
+### Sleeping job
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home base-generative --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --base_generative"

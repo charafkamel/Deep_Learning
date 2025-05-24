@@ -15,7 +15,7 @@ from data_processing import load_dataset_from_disk
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 
 
-class SimilarityToxicityLoss(nn.Module):
+class SimilarityToxicityReward(nn.Module):
     def __init__(
         self,
         categorical_weights: dict,
@@ -23,7 +23,14 @@ class SimilarityToxicityLoss(nn.Module):
         w_tox: float = 1.0,
         device: str = None
     ):
-        self.cat_wts = categorical_weights
+        self.cat_wts = {
+                'toxic': 1,
+                'severe_toxic': 0,
+                'obscene': 0,
+                'threat': 0,
+                'insult': 0,
+                'identity_hate': 0
+            }   
         self.initialize_models_and_tokenizers()
         
         super().__init__()
@@ -53,15 +60,7 @@ class SimilarityToxicityLoss(nn.Module):
         self.tox_mod = AutoModelForSequenceClassification.from_pretrained("unitary/toxic-bert").eval()
         self.sim_tok = AutoTokenizer.from_pretrained("princeton-nlp/sup-simcse-bert-base-uncased")
         self.sim_mod = AutoModel.from_pretrained("princeton-nlp/sup-simcse-bert-base-uncased").eval()
-        if not self.cat_wts:
-            self.cat_wts = {
-                'toxic': 1,
-                'severe_toxic': 0,
-                'obscene': 0,
-                'threat': 0,
-                'insult': 0,
-                'identity_hate': 0
-            }    
+         
     def forward(self, orig_sentences, new_sentences):
         # ensure lists
         if isinstance(orig_sentences, str):
@@ -79,7 +78,7 @@ class SimilarityToxicityLoss(nn.Module):
         emb = self.sim_mod(**sim_inputs, return_dict=True).pooler_output  # (2B, hidden)
         orig_emb, new_emb = emb.split(B, dim=0)
         cos_sim = F.cosine_similarity(orig_emb, new_emb, dim=1)          # (B,)
-        loss_sim = 1.0 - cos_sim                                         # (B,)
+        reward_sim = cos_sim                                         # (B,)
 
         # 2) toxicity loss
         tox_inputs = self.tox_tok(
@@ -91,7 +90,7 @@ class SimilarityToxicityLoss(nn.Module):
         logits = self.tox_mod(**tox_inputs).logits                       # (B, num_labels)
         probs = torch.sigmoid(logits)                                    # (B, num_labels)
         weighted = (probs * self.tox_weights.unsqueeze(0)).sum(dim=1)    # (B,)
-        loss_tox = weighted                                             # (B,)
+        reward_tox = 1- weighted                                             # (B,)
 
         # combined per-example
-        return self.w_sim * loss_sim + self.w_tox * loss_tox            # (B,)
+        return self.w_sim * reward_sim + self.w_tox * reward_tox            # (B,)
