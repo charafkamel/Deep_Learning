@@ -23,5 +23,13 @@ runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 
 ## count_generative
 runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home count-generative --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --count_generative"
 
+## count_generative
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home rl --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --rl"
+
+
 ### Sleeping job
-runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home base-generative --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python main.py --base_generative"
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home debug --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && sleep 72000"
+
+
+### Run evaluation
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home evaluation --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/DeepLearning/Project/Deep_Learning/ && python eval.py"

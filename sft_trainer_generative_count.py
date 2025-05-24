@@ -156,6 +156,5 @@ class CustomGenerativeCountTrainer:
             repo_id=self.new_model_name,
             commit_message="Pushing model to Hugging Face Hub",
             blocking=True,
-            private=True
         )
         return out_dir

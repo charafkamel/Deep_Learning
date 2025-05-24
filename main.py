@@ -1,6 +1,7 @@
 import os
 import logging
 import yaml
+from grpo_trainer import CustomGRPOTrainer
 from helpers import user_login
 from logger import CustomLogger
 from data_processing import process_dataset_and_split
@@ -59,7 +60,12 @@ def main(args):
     
     if rl:
         logger.info("Starting RL training...")
-        
+        custom_grpo_trainer = CustomGRPOTrainer(
+            policy_model_name="Qwen/Qwen3-0.6B",
+            config=config,
+            logger=logger,
+        )
+        custom_grpo_trainer.trainer.train(resume_from_checkpoint=False)
         logger.error("RL training is not implemented yet.")
     
     if count:

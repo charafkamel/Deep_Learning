@@ -18,11 +18,11 @@ from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassific
 class SimilarityToxicityReward(nn.Module):
     def __init__(
         self,
-        categorical_weights: dict,
         w_sim: float = 1.0,
         w_tox: float = 1.0,
         device: str = None
     ):
+        super().__init__()
         self.cat_wts = {
                 'toxic': 1,
                 'severe_toxic': 0,
@@ -30,24 +30,19 @@ class SimilarityToxicityReward(nn.Module):
                 'threat': 0,
                 'insult': 0,
                 'identity_hate': 0
-            }   
-        self.initialize_models_and_tokenizers()
-        
-        super().__init__()
-
-
-        # device
+            }
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(device)
-        
+        self.initialize_models_and_tokenizers()
+
         self.sim_mod.to(self.device)
         self.tox_mod.to(self.device)
 
         # toxicity weights
         label2id = self.tox_mod.config.label2id
         w = torch.zeros(len(label2id), dtype=torch.float)
-        for lab, wt in categorical_weights.items():
+        for lab, wt in self.cat_wts.items():
             w[label2id[lab]] = wt
         w = w / w.sum()
         self.register_buffer("tox_weights", w)
@@ -88,8 +83,9 @@ class SimilarityToxicityReward(nn.Module):
             return_tensors="pt"
         ).to(self.device)
         logits = self.tox_mod(**tox_inputs).logits                       # (B, num_labels)
-        probs = torch.sigmoid(logits)                                    # (B, num_labels)
-        weighted = (probs * self.tox_weights.unsqueeze(0)).sum(dim=1)    # (B,)
+        probs = torch.sigmoid(logits)
+        tox_weights = self.tox_weights.to(probs.device)                             # (B, num_labels)
+        weighted = (probs * tox_weights.unsqueeze(0)).sum(dim=1)    # (B,)
         reward_tox = 1- weighted                                             # (B,)
 
         # combined per-example

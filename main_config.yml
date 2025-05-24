@@ -75,7 +75,7 @@ sft_params_count:
 sft_params_generative_base:
   output_dir: "outputs/SFT_generative_base"
   logging_dir: "outputs/logs_sft_generative_base"
-  learning_rate: 0.00005
+  learning_rate: 0.00003
   num_train_epochs: 4
   lr_scheduler_type: "cosine"
   weight_decay: 0.01
@@ -96,7 +96,7 @@ sft_params_generative_base:
   logging_steps: 100
   save_steps: 200
   save_strategy: "steps"  # Match save and eval strategies
-  save_total_limit: 4
+  save_total_limit: 2
   
   #eval
   eval_steps: 200
@@ -109,7 +109,7 @@ sft_params_generative_base:
 sft_params_generative_count:
   output_dir: "outputs/SFT_generative_count"
   logging_dir: "outputs/logs_sft_generative_count"
-  learning_rate: 0.00005
+  learning_rate: 0.00003
   num_train_epochs: 4
   lr_scheduler_type: "cosine"
   weight_decay: 0.01
@@ -131,7 +131,7 @@ sft_params_generative_count:
   logging_steps: 100
   save_steps: 200
   save_strategy: "steps"  # Match save and eval strategies
-  save_total_limit: 4
+  save_total_limit: 2
   
   #eval
   eval_steps: 200
@@ -143,15 +143,16 @@ sft_params_generative_count:
 
 grpo_params:
   learning_rate : 0.00001 # 0.000001  ## Előbb egyel nagyobb lr volt!
-  num_train_epochs: 3
+  num_train_epochs: 1
   lr_scheduler_type: "linear"
   weight_decay: 0.001
   bf16: True
   bf16_full_eval: True
   # batch
-  #per_device_train_batch_size: 4
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
   gradient_accumulation_steps: 8
-  num_generations: 7
+  num_generations: 4
   
   # input / output
   remove_unused_columns: False
@@ -169,7 +170,7 @@ grpo_params:
   logging_steps: 5 # 1 gpu 100, 3 gpu 20
 
   ## Gradient checkpointing
-  gradient_checkpointing: False
+  gradient_checkpointing: True
   save_steps: 25
   save_strategy: "steps"  # Match save and eval strategies
   resume_from_checkpoint: False
