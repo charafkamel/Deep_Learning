@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -- coding: utf-8 --
-
 import os
 import torch
 import pandas as pd
@@ -26,12 +23,36 @@ def is_t5(model_id):
     config = AutoConfig.from_pretrained(model_id)
     return config.model_type == "t5"
 
+def is_base_model(model_id):
+    return model_id in {"google/t5-v1_1-base", "Qwen/Qwen3-0.6B"}
+
 
 def build_prompt(model_id, toxic):
-    if is_t5(model_id):
-        return f"detoxify: {toxic}"
+    if model_id == "s-nlp/gpt2-base-gedi-detoxification":
+        return (
+            f"Change the toxic sentence into a neutral one.\n"
+            f"Keep it as close as possible to the original. Only remove or replace toxic parts.\n"
+            f"Just give neutral sentence alone.\n"
+            f"Remember: You are allowed to generate only 1 sentence, that is neutral.\n"
+            f"Toxic: {toxic}\nNeutral:"
+        )
+    elif model_id == "s-nlp/t5-paranmt-detox":
+        return toxic
+    elif is_base_model(model_id):
+        if not is_t5(model_id):  # base Qwen
+            return (
+                f"Change the toxic sentence into a neutral one.\n"
+                f"Keep it as close as possible to the original. Only remove or replace toxic parts.\n"
+                f"Just give neutral sentence alone.\n"
+                f"Remember: You are allowed to generate only 1 sentence, that is neutral.\n"
+                f"Toxic: {toxic}\nNeutral:"
+            )
+        else:
+            return f"detoxify: {toxic}"
     else:
-        return f"detoxify: {toxic}\nNeutral:"
+        return f"detoxify: {toxic}" if is_t5(model_id) else f"detoxify: {toxic}\nNeutral:"
+
+
 
 
 def generate_outputs(model_id, eval_data, max_length=64):
@@ -63,7 +84,16 @@ def generate_outputs(model_id, eval_data, max_length=64):
 
         gen = tokenizer.decode(out_ids[0], skip_special_tokens=True)
         if not is_t5_model:
-            gen = gen[len(prompt):].strip()
+            if model_id == "s-nlp/gpt2-base-gedi-detoxification":
+                if "Neutral:" in gen:
+                    gen = gen.split("Neutral:", 1)[-1].strip()
+            elif is_base_model(model_id) and "Qwen" in model_id:
+                if "Neutral:" in gen:
+                    gen = gen.split("Neutral:", 1)[-1].strip()
+                else:
+                    gen = gen.strip()
+            else:
+                gen = gen[len(prompt):].strip()
 
         results.append({
             "original_toxic": orig,
@@ -149,7 +179,9 @@ def main():
     # Add base models for comparison
     base_models = [
         "google/t5-v1_1-base",
-        "Qwen/Qwen3-0.6B"
+        "Qwen/Qwen3-0.6B",
+        "s-nlp/gpt2-base-gedi-detoxification",
+        "s-nlp/t5-paranmt-detox"
     ]
     all_models_to_eval = sft_models + base_models
 
