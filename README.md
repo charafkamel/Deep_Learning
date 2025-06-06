@@ -15,15 +15,19 @@ This repository contains the implementation of our **Deep Learning Mini-Project*
 <!--
 ## Project Structure
 ```
-📂 deep-learning-project/
-│── 📂 data/                  # Datasets for training & evaluation
-│── 📂 models/                # Implemented deep learning architectures
-│── 📂 notebooks/             # Jupyter notebooks for experiments
-│── 📂 scripts/               # Training & inference scripts
-│── 📂 results/               # Model evaluation & performance reports
-│── README.md                 # Project documentation
-│── requirements.txt          # Dependencies and package list
-│── config.yaml               # Configuration settings for training
+📂 DEEP_LEARNING/
+│- 📂 data_preprocessing/                  # Datasets for training & evaluation
+│- 📂 eval/                # Implemented deep learning architectures
+│- 📂 plots/             # Jupyter notebooks for experiments
+│- 📂 test/               # Training & inference scripts
+│- 📂 trainer/               # Model evaluation & performance reports
+│- 📂 utils/               # Model evaluation & performance reports
+│- README.md                 # Project documentation
+│- requirements.txt          # Dependencies and package list
+│- main_config.yaml               # Configuration settings for training
+|- main.py
+|- basic_running_scripts.sh
+|- tokens.yaml
 ```
 
 ## Setup & Installation

@@ -1,8 +1,11 @@
-sft_peft: True
+hf_username: "TarhanE"
+### Weights for our custom DetoxCOUNT loss
 mle_weight:   0.5
 ul_weight:    0.5
 tox_weight:   1.0
-sft_params_base:
+
+### Training parameters for base model (T5) with base SFT loss (CrossEntropy)
+sft_params_base_enc_dec:
   output_dir: "outputs/SFT_base"
   logging_dir: "outputs/logs_sft_base"
   learning_rate: 0.00005
@@ -10,6 +13,7 @@ sft_params_base:
   lr_scheduler_type: "constant"
   weight_decay: 0.01
   fp16: False
+  bf16: True
   fp16_backend: "auto"
   max_grad_norm: 1
   warmup_steps: 5
@@ -36,7 +40,8 @@ sft_params_base:
   metric_for_best_model: "eval_loss"
   greater_is_better: False  
 
-sft_params_count:
+### Training parameters for count model (T5) with DetoxCOUNT loss
+sft_params_dcount_enc_dec:
   output_dir: "outputs/SFT_count"
   logging_dir: "outputs/logs_sft_count"
   learning_rate: 0.00005
@@ -44,6 +49,7 @@ sft_params_count:
   lr_scheduler_type: "constant"
   weight_decay: 0.01
   fp16: False
+  bf16: True
   fp16_backend: "auto"
   max_grad_norm: 1
   warmup_steps: 5
@@ -71,8 +77,8 @@ sft_params_count:
   metric_for_best_model: "eval_loss"
   greater_is_better: False
 
-
-sft_params_generative_base:
+### Training parameters for base model (Decoder only) with base SFT loss (CrossEntropy)
+sft_params_base_generative:
   output_dir: "outputs/SFT_generative_base"
   logging_dir: "outputs/logs_sft_generative_base"
   learning_rate: 0.00003
@@ -106,7 +112,8 @@ sft_params_generative_base:
   metric_for_best_model: "eval_loss"
   greater_is_better: False  
 
-sft_params_generative_count:
+### Training parameters for count model (T5) with DetoxCOUNT loss
+sft_params_dcount_generative:
   output_dir: "outputs/SFT_generative_count"
   logging_dir: "outputs/logs_sft_generative_count"
   learning_rate: 0.00003
@@ -177,12 +184,6 @@ grpo_params:
 
   save_total_limit: 1
   
-  #eval
-  # per_device_eval_batch_size: 4
-  # eval_steps: 100
-  # eval_strategy: "steps"  # Ensure evaluations occur during training
-  # eval_on_start:  True
-
   #Hub
   push_to_hub: True
   hub_strategy: "end"

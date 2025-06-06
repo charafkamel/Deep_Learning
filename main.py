@@ -10,11 +10,8 @@ from sft_trainer_base import SFTTrainerBase
 from sft_trainer_count import CustomCountTrainer
 from sft_trainer_generative_base import SFTGenerativeTrainerBase
 from sft_trainer_generative_count import CustomGenerativeCountTrainer
+from helpers import load_config
 
-def load_config(config_path="main_config.yml"):
-    """Load configuration from YAML file."""
-    with open(config_path, "r") as file:
-        return yaml.safe_load(file)
 
 
 def main(args):
@@ -34,8 +31,6 @@ def main(args):
     count = args.count
     base_generative = args.base_generative
     count_generative = args.count_generative
-    #if not sft and not rl:
-    #    logger.error("Both SFT and RL training are disabled. What to do? :D")
 
     process_dataset_and_split(logger, print_stats=True)
     logger.info("Dataset processing and splitting completed.")

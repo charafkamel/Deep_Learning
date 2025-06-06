@@ -1,7 +1,0 @@
-{"time":"2025-05-17T16:07:11.735444498Z","level":"INFO","msg":"stream: starting","core version":"0.19.11","symlink path":"/scratch/students/2025-spring-sp-tarhan/trial/Deep_Learning/wandb/run-20250517_160711-necx8wrp/logs/debug-core.log"}
-{"time":"2025-05-17T16:07:12.015957476Z","level":"INFO","msg":"created new stream","id":"necx8wrp"}
-{"time":"2025-05-17T16:07:12.016016837Z","level":"INFO","msg":"stream: started","id":"necx8wrp"}
-{"time":"2025-05-17T16:07:12.016047724Z","level":"INFO","msg":"writer: Do: started","stream_id":"necx8wrp"}
-{"time":"2025-05-17T16:07:12.016075286Z","level":"INFO","msg":"handler: started","stream_id":"necx8wrp"}
-{"time":"2025-05-17T16:07:12.016081748Z","level":"INFO","msg":"sender: started","stream_id":"necx8wrp"}
-{"time":"2025-05-17T16:07:12.236613838Z","level":"INFO","msg":"Starting system monitor"}
