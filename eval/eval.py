@@ -12,6 +12,7 @@ from transformers import (
     AutoConfig,
     AutoModelForSeq2SeqLM,
 )
+import re
 from tqdm import tqdm
 from data_preprocessing.data_processing import load_dataset_from_disk
 
@@ -22,11 +23,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def is_seq2seq_model(model_id):
     """
     Checks if a model is a sequence-to-sequence model based on its configuration.
-    This function should correctly identify mBART models as Seq2Seq.
+    Parameters:
+        model_id (str): The identifier of the model.
+    Returns:
+        bool: If the given model_id is a seq2seq model
     """
     try:
         config = AutoConfig.from_pretrained(model_id)
-        # Check if any architecture name contains "Seq2Seq" or "ConditionalGeneration" (common for seq2seq models)
         return config.architectures and any(
             "Seq2Seq" in a or "ConditionalGeneration" in a for a in config.architectures
         )
@@ -38,6 +41,10 @@ def is_seq2seq_model(model_id):
 def is_base_model(model_id):
     """
     Checks if the model is one of the predefined base models.
+    Parameters:
+        model_id (str): The identifier of the model.
+    Returns:
+        bool: If the model given is a base model or not.
     """
     return model_id in {"google/flan-t5-base", "Qwen/Qwen2.5-0.5B-Instruct"}
 
@@ -45,7 +52,13 @@ def is_base_model(model_id):
 def build_prompt(model_id, toxic_sentence):
     """
     Constructs the appropriate prompt for the given model and toxic sentence.
+    Parameters:
+        model_id (str): The identifier of the model.
+        toxic_sentence (str): The toxic sentence to detoxify.
+    Returns:
+        str: The constructed prompt for the model.
     """
+
     if model_id == "s-nlp/gpt2-base-gedi-detoxification":
         return (
             f"Change the toxic sentence into a neutral one.\n"
@@ -57,32 +70,34 @@ def build_prompt(model_id, toxic_sentence):
     elif model_id == "s-nlp/t5-paranmt-detox" or model_id == "textdetox/mbart-detox-baseline":
         return toxic_sentence
     elif is_base_model(model_id):
-        if not is_seq2seq_model(model_id):  # Qwen (Causal LM)
-            # The prompt here is crucial for Qwen to give concise answers.
-            # We are explicitly asking for *only* the neutral sentence.
-            # Using a system/user message structure or a very clear instruction might help.
-            # For simplicity, let's keep it direct and rely on post-processing.
+        if not is_seq2seq_model(model_id):
             return (
                 f"You are given a toxic sentence. Your task is to rewrite it as a neutral sentence.\n"
                 f"Respond with ONLY the neutral sentence, nothing else.\n"
                 f"Toxic: {toxic_sentence}\nNeutral:" # Changed #### to just Neutral:
             )
-        else: # Flan-T5 (Seq2Seq base model)
+        else:
             return f"detoxify: {toxic_sentence}"
-    else: # Default for other models
+    else:
         return f"detoxify: {toxic_sentence}" if is_seq2seq_model(model_id) else f"detoxify: {toxic_sentence}\nNeutral:"
 
 
 def generate_outputs(model_id, eval_data, max_length=64):
     """
     Generates detoxified outputs for the given model and evaluation data.
+    Parameters:
+        model_id (str): The identifier of the model to use for generation.
+        eval_data (list): The evaluation data containing toxic sentences.
+        max_length (int): The maximum length of the generated output.
+    Returns:
+        list: A list of dictionaries containing original toxic sentences, reference neutral sentences, and generated neutral sentences.
     """
     is_seq2seq = is_seq2seq_model(model_id)
 
     if is_seq2seq:
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         model = AutoModelForSeq2SeqLM.from_pretrained(model_id).to(device)
-        tokenizer.padding_side = "right"  # Explicitly set for seq2seq
+        tokenizer.padding_side = "right"
 
         if model_id == "textdetox/mbart-detox-baseline":
             if hasattr(tokenizer, "lang_code_to_id") and "en_XX" in tokenizer.lang_code_to_id:
@@ -99,7 +114,7 @@ def generate_outputs(model_id, eval_data, max_length=64):
                 pad_token_id=tokenizer.pad_token_id,
                 forced_bos_token_id=forced_bos_token_id_val
             )
-        else: # For other seq2seq models like Flan-T5 or s-nlp/t5-paranmt-detox
+        else:
             generate_fn = lambda m, t: m.generate(
                 **t,
                 max_length=max_length,
@@ -107,7 +122,7 @@ def generate_outputs(model_id, eval_data, max_length=64):
                 early_stopping=True
             )
 
-    else: # Causal Language Model (e.g., Qwen, s-nlp/gpt2-base-gedi-detoxification)
+    else:
         tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
         model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True).to(device)
         if tokenizer.pad_token is None:
@@ -125,11 +140,8 @@ def generate_outputs(model_id, eval_data, max_length=64):
 
         if is_seq2seq:
             enc = tokenizer(prompt, return_tensors="pt", truncation=True, padding=True, max_length=max_length).to(device)
-        else: # Causal LM
-            # For causal LMs, only apply truncation/padding if prompt is excessively long
-            # and ensure prompt is not truncated if possible as it affects response.
-            # max_length here controls generated tokens, not input tokens.
-            enc = tokenizer(prompt, return_tensors="pt", truncation=False, padding=True).to(device) # Do not truncate prompt.
+        else:
+            enc = tokenizer(prompt, return_tensors="pt", truncation=False, padding=True).to(device)
 
 
         with torch.no_grad():
@@ -142,19 +154,14 @@ def generate_outputs(model_id, eval_data, max_length=64):
                 if "Neutral:" in gen:
                     gen = gen.split("Neutral:", 1)[-1].strip()
             elif is_base_model(model_id) and "Qwen" in model_id:
-                # --- START QWEN-SPECIFIC EXTRACTION LOGIC ---
-                gen_after_prompt = gen[len(prompt):].strip() # Remove the prompt part first
+                gen_after_prompt = gen[len(prompt):].strip()
 
-                # Qwen is chatty, so try to find the "Neutral:" and then grab only the sentence.
-                # It might start with "Neutral: " or just the sentence directly.
                 extracted_text = ""
                 if "Neutral:" in gen_after_prompt:
                     temp_gen = gen_after_prompt.split("Neutral:", 1)[-1].strip()
-                    # Try to get only the first line or first sentence
                     first_line = temp_gen.split('\n', 1)[0].strip()
                     if '.' in first_line or '!' in first_line or '?' in first_line:
-                        # If it looks like a sentence, take it up to the first sentence end
-                        import re
+                        
                         match = re.match(r"([^.!?]*[.!?])", first_line)
                         extracted_text = match.group(1).strip() if match else first_line # Take first sentence
                     else:
@@ -243,7 +250,7 @@ def evaluate_model(model_id, eval_data):
     """
     results = generate_outputs(model_id, eval_data)
     results = score_toxicity_and_similarity(results)
-    print(f"✅ Evaluation completed for model: {model_id}")
+    print(f"Evaluation completed for model: {model_id}")
     df = pd.DataFrame(results)[[
         "original_toxic",
         "toxicity_orig",

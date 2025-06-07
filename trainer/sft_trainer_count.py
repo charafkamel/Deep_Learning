@@ -111,6 +111,14 @@ class CustomCountTrainer:
         dataset = load_from_disk(dataset_path)
 
         def preprocess(example):
+            """
+            Preprocess the dataset by formatting the input and target texts.
+            Converts the toxic text to a prompt and the neutral text to the target.
+            Parameters:
+                example (dict): A single example from the dataset.
+            Returns:
+                dict: A dictionary containing the tokenized input and target texts.
+            """
             input_text = "detoxify: " + example["toxic"]
             target_text = example["neutral"]
             model_input = self.tokenizer(input_text, max_length=64, padding="max_length", truncation=True)
@@ -128,6 +136,7 @@ class CustomCountTrainer:
         self.train_dataset = split["train"]
         self.eval_dataset = split["test"]
 
+
         count_params = self.config.get("sft_params_dcount_enc_dec", {})
 
         self.loss_weights = {
@@ -140,6 +149,8 @@ class CustomCountTrainer:
         self.new_model_name = f"{self.repo_id}/sft-count_loss-{self.model_name_for_hub}-mle{self.loss_weights['mle']}-ul{self.loss_weights['ul']}-tox{self.loss_weights['tox']}-e{self.config['sft_params_dcount_enc_dec']['num_train_epochs']}"
         self.training_args = Seq2SeqTrainingArguments(**count_params, hub_model_id=self.new_model_name,
             run_name=  self.new_model_name)
+        
+        # Initialize the COUNTLossTrainer
         self.trainer = COUNTLossTrainer(
             model=self.model,
             args=self.training_args,
@@ -154,6 +165,13 @@ class CustomCountTrainer:
         )
 
     def train(self, resume_from_checkpoint=False):
+        """
+        Train the model using the COUNTLossTrainer.
+        Args:
+            resume_from_checkpoint (bool): Whether to resume training from a checkpoint.
+        Returns:
+            str: The output directory where the model and tokenizer are saved.
+        """
         self.logger.info("[CountTrainer] Starting training")
         self.trainer.train(resume_from_checkpoint=resume_from_checkpoint)
         epoch = int(self.trainer.state.epoch or 0)
