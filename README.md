@@ -36,17 +36,11 @@ The repository contains the following directories and files:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/your-project.git
-   cd your-project
+   git clone https://github.com/charafkamel/Deep_Learning.git
+   cd Deep_Learning
    ```
 
 ### Setup & Installation
-1. **Clone the repository**
-   ```sh
-   git clone https://github.com/your_username/deep-learning-project.git
-   cd deep-learning-project
-   ```
-
 2. **Create a virtual environment** (optional)
    ```sh
    python -m venv venv
@@ -59,26 +53,48 @@ The repository contains the following directories and files:
    ```
 
 ### Dataset
-- The dataset used for training includes **text, images, and audio** related to hate speech detection.
-- Preprocessing steps include **tokenization, augmentation, and feature extraction**.
+To train, evaluate and test the model we use the paradetox dataset from https://github.com/s-nlp/paradetox/blob/main/paradetox/paradetox.tsv. It is a parallel detoxification dataset containing over more than <b>12,000 toxic-neutralized sentence pairs</b>. Collected via crowdsourcing using Reddit, Twitter and Jigsaw. Ensures semantic similarity and fluency while removing toxicity.
+
 
 ### Model Architecture
-- **Multi-modal deep learning models** integrating **transformers, CNNs, and RNNs**.
-- **Transfer learning** is used with pre-trained models such as **BERT, CLIP, and ResNet**.
-- Regularization techniques to mitigate bias and improve generalization.
+We use the Qwen3-0.6B model and the T5-base model as our primary architectures, representing decoder-only and encoder-decoder architectures respectively.
+
 
 ### Training
-To train the model, use:
-```sh
-python scripts/train.py --config config.yaml
+This project supports **Supervised Fine-Tuning (SFT)** and **Reinforcement Learning (GRPO)** training for both encoder-decoder (Seq2Seq) and decoder-only models. Below are the available training configurations and how to use them.
+
+### Available Training Setups
+
+We support five different training setups:
+
+#### 1. Encoder-Decoder (Seq2Seq) Models
+- `--base`: Train using standard cross-entropy loss
+- `--count`: Train using our custom loss function
+
+#### 2. Decoder-Only Models
+- `--base_generative`: Train using standard cross-entropy loss
+- `--count_generative`: Train using our custom loss function
+- `--rl`: Train using Reinforcement Learning (GRPO) with our custom reward function
+
+### How to Train
+
+Run the following command with the appropriate flag:
+
+```bash
+python main.py --base              # Seq2Seq with standard loss
+python main.py --count             # Seq2Seq with custom loss
+python main.py --base_generative   # Decoder-only with standard loss
+python main.py --count_generative  # Decoder-only with custom loss
+python main.py --rl                # Decoder-only with RL (GRPO)
 ```
 
 ### Evaluation
 To evaluate model performance:
 ```sh
-python scripts/evaluate.py --model_path models/best_model.pth
+python eval/eval.py
 ```
 
 ### Contributors
-- **Your Name**
-- **Project Group Members**
+- **Kamel Charaf**
+- **Efe Tarhan**
+- **Mahmut Serkan Kopuzlu**
