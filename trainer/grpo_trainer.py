@@ -67,7 +67,7 @@ class CustomGRPOTrainer:
         self.reward_model = SimilarityToxicityReward(w_sim=1.0, w_tox=1.0, device=self.device)
 
 
-    def _reward_fn(self, prompts, completions):
+    def _reward_fn(self, prompts, completions, **kwargs):
         """
         Custom reward function that computes the reward based on our custom reward model and KL divergence penalty.
         Args:
@@ -158,7 +158,9 @@ class CustomGRPOTrainer:
         """
 
         self.trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+        self.output_dir = self.trainer.args.output_dir
         os.makedirs(self.output_dir, exist_ok=True)
         self.policy_model.save_pretrained(self.output_dir)
         self.tokenizer.save_pretrained(self.output_dir)
+        self.trainer.push_to_hub()
         print(f"Saved fine-tuned model to {self.output_dir}")

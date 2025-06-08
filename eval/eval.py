@@ -1,8 +1,8 @@
-import os
+import logging
 import torch
+import re
 import pandas as pd
 import torch.nn.functional as F
-from datasets import load_dataset
 from huggingface_hub import list_models
 from transformers import (
     AutoTokenizer,
@@ -12,15 +12,19 @@ from transformers import (
     AutoConfig,
     AutoModelForSeq2SeqLM,
 )
-import re
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from tqdm import tqdm
 from data_preprocessing.data_processing import load_dataset_from_disk
+from utils.helpers import load_config, user_login
+from utils.logger import CustomLogger
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def is_seq2seq_model(model_id):
+def is_seq2seq_model(model_id, logger=None):
     """
     Checks if a model is a sequence-to-sequence model based on its configuration.
     Parameters:
@@ -34,7 +38,10 @@ def is_seq2seq_model(model_id):
             "Seq2Seq" in a or "ConditionalGeneration" in a for a in config.architectures
         )
     except Exception as e:
-        print(f"Warning: Could not load config for {model_id}. Assuming not seq2seq. Error: {e}")
+        if logger:
+            logger.warning(f"Could not load config for {model_id}. Assuming not seq2seq. Error: {e}")
+        else:
+            print(f"Warning: Could not load config for {model_id}. Assuming not seq2seq. Error: {e}")
         return False
 
 
@@ -175,8 +182,7 @@ def generate_outputs(model_id, eval_data, max_length=64):
                         extracted_text = match.group(1).strip() if match else first_line
                     else:
                         extracted_text = first_line
-                else: # If no specific delimiters, try to guess the main sentence
-                    # This is a last resort and might still include some unwanted text
+                else:
                     first_line = gen_after_prompt.split('\n', 1)[0].strip()
                     if '.' in first_line or '!' in first_line or '?' in first_line:
                         import re
@@ -186,9 +192,8 @@ def generate_outputs(model_id, eval_data, max_length=64):
                         extracted_text = first_line
 
                 gen = extracted_text.replace("\"", "").strip() # Remove any leftover quotes and extra whitespace
-                # --- END QWEN-SPECIFIC EXTRACTION LOGIC ---
             else:
-                gen = gen[len(prompt):].strip() # Default for other causal LMs
+                gen = gen[len(prompt):].strip() # Default
 
         results.append({
             "original_toxic": orig,
@@ -199,7 +204,7 @@ def generate_outputs(model_id, eval_data, max_length=64):
     return results
 
 
-def score_toxicity_and_similarity(results):
+def score_toxicity_and_similarity(results, logger):
     """
     Scores the toxicity and semantic similarity of the generated sentences.
     """
@@ -211,7 +216,10 @@ def score_toxicity_and_similarity(results):
         tox_label = label2id["toxicity"]
     elif "LABEL_0" in label2id:
         tox_label = label2id["LABEL_0"]
-        print("Warning: 'toxicity' label not found for toxic-bert, defaulting to 'LABEL_0'.")
+        if logger:
+            logger.warning("Warning: 'toxicity' label not found for toxic-bert, defaulting to 'LABEL_0'.")
+        else:
+            print("Warning: 'toxicity' label not found for toxic-bert, defaulting to 'LABEL_0'.")
     else:
         tox_label = list(label2id.values())[0]
         print(f"Warning: 'toxicity' label not found for toxic-bert, defaulting to first label: {list(label2id.keys())[0]}. Please verify.")
@@ -244,12 +252,12 @@ def score_toxicity_and_similarity(results):
     return results
 
 
-def evaluate_model(model_id, eval_data):
+def evaluate_model(model_id, eval_data, logger):
     """
     Evaluates a single model for detoxification and similarity.
     """
     results = generate_outputs(model_id, eval_data)
-    results = score_toxicity_and_similarity(results)
+    results = score_toxicity_and_similarity(results, logger)
     print(f"Evaluation completed for model: {model_id}")
     df = pd.DataFrame(results)[[
         "original_toxic",
@@ -276,25 +284,29 @@ def main():
     """
     Main function to search, evaluate, and save results for detoxification models.
     """
-    print("Searching models under TarhanE/sft-* ...")
-    all_models = list_models(author="TarhanE")
-    sft_models = [m.modelId for m in all_models if m.modelId.startswith("TarhanE/sft-")]
+    config = load_config()
+
+    # Setup logging
+    logger = CustomLogger(__name__, level=logging.DEBUG)
+
+    # User login
+    user_login(logger)
+    
+    logger.info("Starting detoxification evaluation...")
+    all_models = list_models(author=config.get("hf_username", "kamelcharaf"))
+    sft_models = [m.modelId for m in all_models]
 
     if not sft_models:
-        print("❌ No matching models found under TarhanE/sft-*.")
-        # Consider adding other default models if no SFT models are found
-        # sft_models = ["google/flan-t5-base"] # Example: Fallback to a single model for testing
-        # print("Using a fallback model for evaluation.")
-        # return # Uncomment to exit if no SFT models are strictly required
+        logger.error("No matching models found under TarhanE/sft-*.")
 
-    print("📚 Loading evaluation dataset...")
+    logger.info("Loading evaluation dataset...")
     eval_ds = load_dataset_from_disk("test_dataset")
     eval_data = eval_ds.shuffle(seed=42) # Limit for fast debug
 
     base_models = [
         "google/flan-t5-base",
         "Qwen/Qwen2.5-0.5B-Instruct",
-        "textdetox/mbart-detox-baseline"
+        "textdetox/mbart-detox-baseline",
         "s-nlp/t5-paranmt-detox",
     ]
     all_models_to_eval = sft_models + base_models
@@ -303,20 +315,18 @@ def main():
 
     for model_id in tqdm(all_models_to_eval, desc="Evaluating models"):
         try:
-            print(f"🔍 Evaluating model: {model_id}")
-            df = evaluate_model(model_id, eval_data)
+            logger.info(f"Evaluating model: {model_id}")
+            df = evaluate_model(model_id, eval_data, logger)
             all_dfs.append(df)
         except Exception as e:
-            print(f"❌ Failed to evaluate {model_id}: {e}")
-            import traceback
-            traceback.print_exc() # Print full traceback for debugging
+            logger.error(f"Failed to evaluate {model_id}: {e}")
 
     if all_dfs:
         final_df = pd.concat(all_dfs, ignore_index=True)
-        final_df.to_csv("detoxification_evaluation_all_new.csv", index=False)
-        print("✅ Saved all results to: detoxification_evaluation_all_new.csv")
+        final_df.to_csv("detoxification_evaluation_merged.csv", index=False)
+        logger.info("Saved all results to: results/detoxification_evaluation_merged.csv")
     else:
-        print("❌ No evaluations completed.")
+        logger.warning("No evaluations completed.")
 
 
 if __name__ == "__main__":

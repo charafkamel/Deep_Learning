@@ -97,9 +97,7 @@ class SFTGenerativeTrainerBase:
         self.trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
         ## Save the model and tokenizer after training
-        final_epoch = int(self.trainer.state.epoch or 0)
-        out_dir = os.path.join(self.trainer.args.output_dir, f"e{final_epoch}")
-        os.makedirs(out_dir, exist_ok=True)
+        out_dir = self.trainer.args.output_dir
 
         self.trainer.save_model(out_dir)
         self.tokenizer.save_pretrained(out_dir)

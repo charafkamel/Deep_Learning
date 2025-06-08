@@ -42,7 +42,7 @@ def main(args):
             config=config,
             logger=logger
         )
-        custom_trainer_base.trainer.train(resume_from_checkpoint=False)
+        custom_trainer_base.train(resume_from_checkpoint=False)
     if base_generative:
         logger.info("Starting SFT training...")
         custom_trainer_base_generative = SFTGenerativeTrainerBase(
@@ -51,7 +51,7 @@ def main(args):
             logger=logger
         )
         
-        custom_trainer_base_generative.trainer.train(resume_from_checkpoint=False)
+        custom_trainer_base_generative.train(resume_from_checkpoint=False)
     
     if rl:
         logger.info("Starting RL training...")
@@ -60,7 +60,7 @@ def main(args):
             config=config,
             logger=logger,
         )
-        custom_grpo_trainer.trainer.train(resume_from_checkpoint=False)
+        custom_grpo_trainer.train(resume_from_checkpoint=False)
         logger.error("RL training is not implemented yet.")
     
     if count:
@@ -71,7 +71,7 @@ def main(args):
             config=config,
             logger=logger
         )
-        count_trainer.trainer.train(resume_from_checkpoint=False)
+        count_trainer.train(resume_from_checkpoint=False)
     if count_generative:
         logger.info("Starting COUNT-based detoxification training...")
         count_trainer_generative = CustomGenerativeCountTrainer(
@@ -80,10 +80,10 @@ def main(args):
             logger=logger
         )
         
-        count_trainer_generative.trainer.train(resume_from_checkpoint=False)
+        count_trainer_generative.train(resume_from_checkpoint=False)
         logger.info("COUNT-based detoxification training completed.")
     
-    exit(-1)
+    logger.info("All training processes completed.")
 
 if __name__ == "__main__":
     ### Give me an argument boolean that allows sft or not default to true

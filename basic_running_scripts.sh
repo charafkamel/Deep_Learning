@@ -32,4 +32,4 @@ runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 
 
 
 ### Run evaluation
-runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home evaluation --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/Deep_Learning/ && python eval.py"
+runai submit --image registry.rcp.epfl.ch/ee-559-charaf/my-toolbox:latest --gpu 1 --backoff-limit 0 --pvc course-ee-559-scratch:/scratch --pvc home:/pvc/home evaluation --command -- sh -c "pip install sentencepiece && cd ../../pvc/home/Deep_Learning/ && python eval/eval.py"

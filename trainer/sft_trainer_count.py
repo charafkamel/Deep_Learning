@@ -174,16 +174,11 @@ class CustomCountTrainer:
         """
         self.logger.info("[CountTrainer] Starting training")
         self.trainer.train(resume_from_checkpoint=resume_from_checkpoint)
-        epoch = int(self.trainer.state.epoch or 0)
-        out_dir = os.path.join(self.training_args.output_dir, f"count_e{epoch}")
-        os.makedirs(out_dir, exist_ok=True)
+
+        out_dir = self.trainer.args.output_dir
+
         self.trainer.save_model(out_dir)
         self.tokenizer.save_pretrained(out_dir)
         self.logger.info(f"[CountTrainer] Model & tokenizer saved to {out_dir}")
-        self.trainer.push_to_hub(
-            repo_id=self.new_model_name,
-            commit_message="Pushing model to Hugging Face Hub",
-            blocking=True,
-            private=True
-        )
+        self.trainer.push_to_hub()
         return out_dir

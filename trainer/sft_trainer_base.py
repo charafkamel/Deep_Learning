@@ -84,13 +84,13 @@ class SFTTrainerBase:
         self.trainer.train(resume_from_checkpoint)
 
         ## Save the model and tokenizer
-        final_epoch = int(self.trainer.state.epoch or 0)
-        out_dir = os.path.join(self.trainer.args.output_dir, f"e{final_epoch}")
-        os.makedirs(out_dir, exist_ok=True)
+        out_dir = self.trainer.args.output_dir
 
         ## save model + tokenizer into output_dir/e{epoch}
         self.trainer.save_model(out_dir)
         self.tokenizer.save_pretrained(out_dir)
+
+        self.trainer.push_to_hub()
 
         if self.logger:
             self.logger.info(f"Model & tokenizer saved to {out_dir}")

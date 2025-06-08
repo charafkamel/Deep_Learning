@@ -149,7 +149,7 @@ sft_params_dcount_generative:
   greater_is_better: False  
 
 grpo_params:
-  learning_rate : 0.00001 # 0.000001  ## Előbb egyel nagyobb lr volt!
+  learning_rate : 0.00000001 # 0.000001  ## Előbb egyel nagyobb lr volt!
   num_train_epochs: 1
   lr_scheduler_type: "linear"
   weight_decay: 0.001
