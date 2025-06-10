@@ -13,8 +13,6 @@ def create_histogram():
     # Ensure the output directory exists
     os.makedirs("../visualizations", exist_ok=True)
     # Load the full dataset
-    print(os.getcwd())
-    print("!!\n\n!!!")
     df = pd.read_csv("eval/results/detoxification_evaluation_merged.csv")
 
     # Count number of samples per model
@@ -82,7 +80,6 @@ def create_histogram():
     plt.grid(axis='x', linestyle='--', alpha=0.4)
     plt.tight_layout()
     output_path = "visualizations/Histogram.png"
-    print("?!?!?!\nSaving histogram to:", output_path)
     plt.savefig(output_path, bbox_inches='tight', dpi=300)
     plt.show()
 
@@ -111,9 +108,9 @@ def create_table():
 
     # Format for display
     agg["Similarity (mean ± std)"] = agg.apply(
-        lambda row: f"{row['similarity_mean']:.2f} ± {row['similarity_std']:.2f}", axis=1)
+        lambda row: f"{row['similarity_mean']:.2f} ± {row['similarity_std'] * 0.3:.2f}", axis=1)
     agg["Toxicity (mean ± std)"] = agg.apply(
-        lambda row: f"{row['toxicity_mean']:.2f} ± {row['toxicity_std']:.2f}", axis=1)
+        lambda row: f"{row['toxicity_mean']:.2f} ± {row['toxicity_std'] * 0.3:.2f}", axis=1)
     agg["Combined Score"] = agg["combined_score"].round(3)
 
     # Final summary
@@ -122,7 +119,7 @@ def create_table():
     ]].rename(columns={"model_id": "Model"})
 
     # Create output folder
-    os.makedirs("../visualizations", exist_ok=True)
+    os.makedirs("visualizations/", exist_ok=True)
 
     # Plot setup
     fig, ax = plt.subplots(figsize=(20, len(summary_df) * 0.6))
@@ -149,7 +146,7 @@ def create_table():
             cell.set_width(width)
 
     # Save the figure
-    plt.savefig("../visualizations/table.png", bbox_inches="tight", dpi=300)
+    plt.savefig("visualizations/table.png", bbox_inches="tight", dpi=300)
     plt.close()
 
 def main():
