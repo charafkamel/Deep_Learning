@@ -22,6 +22,7 @@ The repository contains the following directories and files:
 - `test/` includes scripts for testing training and inference behavior.
 - `trainer/` implements the training loop and model management.
 - `utils/` provides utility functions used across the project.
+- `visualizatios/` contains a folder with the plots used in our report.
 
 #### Top-Level Files
 
@@ -31,6 +32,7 @@ The repository contains the following directories and files:
 - `main.py` – Entry point to run the training pipeline.
 - `basic_running_scripts.sh` – Shell script(s) to launch experiments.
 - `tokens.yaml` – Contains token/API configuration if needed.
+- `starter.sh` - Center script that runs the training
 
 ### Getting Started
 
@@ -93,6 +95,14 @@ To evaluate model performance:
 ```sh
 python eval/eval.py
 ```
+This will run the evaluation script on all of the saved models under the defined hugging-face account (defined in main_config.yml with the "hf_username" parameter). The results will be saved in a csv under
+
+### Run everything
+It is also possible to run all of the training using the starter script:
+```sh
+./starter.sh
+```
+This will launch all 5 training jobs in parallel. After those are finished running, we might launch the evaluation script
 
 ### Contributors
 - **Kamel Charaf**

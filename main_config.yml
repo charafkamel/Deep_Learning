@@ -2,7 +2,7 @@ hf_username: "TarhanE"
 ### Weights for our custom DetoxCOUNT loss
 mle_weight:   0.5
 ul_weight:    0.5
-tox_weight:   1.0
+tox_weight:   0
 
 ### Training parameters for base model (T5) with base SFT loss (CrossEntropy)
 sft_params_base_enc_dec:
@@ -149,6 +149,8 @@ sft_params_dcount_generative:
   greater_is_better: False  
 
 grpo_params:
+  output_dir: "outputs/SFT_rl"
+  logging_dir: "outputs/logs_rl"
   learning_rate : 0.00000001 # 0.000001  ## Előbb egyel nagyobb lr volt!
   num_train_epochs: 1
   lr_scheduler_type: "linear"

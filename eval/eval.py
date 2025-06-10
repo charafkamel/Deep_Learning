@@ -19,9 +19,144 @@ from tqdm import tqdm
 from data_preprocessing.data_processing import load_dataset_from_disk
 from utils.helpers import load_config, user_login
 from utils.logger import CustomLogger
-
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def result_table():
+    # Load CSV
+    df = pd.read_csv("eval/results/detoxification_evaluation_merged.csv")
+
+    # Group and aggregate
+    agg = df.groupby("model_id").agg(
+        similarity_mean=("similarity_original_generated", "mean"),
+        similarity_std=("similarity_original_generated", "std"),
+        toxicity_mean=("toxicity_generated", "mean"),
+        toxicity_std=("toxicity_generated", "std"),
+        n=("similarity_original_generated", "count")
+    ).reset_index()
+
+    # Compute combined score
+    agg["combined_score"] = 0.5 * agg["similarity_mean"] + 0.5 * (1 - agg["toxicity_mean"])
+
+    # Sort by combined score
+    agg = agg.sort_values("combined_score", ascending=False).reset_index(drop=True)
+
+    # Add rank
+    agg["rank"] = agg.index + 1
+
+    # Format strings
+    agg["Similarity (mean ± std)"] = agg.apply(
+        lambda row: f"{row['similarity_mean']:.2f} ± {row['similarity_std']:.2f}", axis=1)
+    agg["Toxicity (mean ± std)"] = agg.apply(
+        lambda row: f"{row['toxicity_mean']:.2f} ± {row['toxicity_std']:.2f}", axis=1)
+    agg["Combined Score"] = agg["combined_score"].round(3)
+    agg["Rank"] = agg["rank"]
+
+    # Final display table
+    summary_df = agg[[
+        "model_id",
+        "Similarity (mean ± std)",
+        "Toxicity (mean ± std)",
+        "Combined Score",
+    ]].rename(columns={"model_id": "Model"})
+
+    # Ensure output directory exists
+    os.makedirs("../visualizations", exist_ok=True)
+
+    # Set up figure
+    fig, ax = plt.subplots(figsize=(12, len(summary_df) * 0.5))
+    ax.axis("off")  # Hide axes
+
+    # Create table in the figure
+    table = ax.table(
+        cellText=summary_df.values,
+        colLabels=summary_df.columns,
+        cellLoc="center",
+        loc="center",
+    )
+
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 1.5)  # Adjust for spacing
+
+    # Save to file
+    plt.savefig("../visualizations/table.png", bbox_inches="tight", dpi=300)
+    plt.close()
+
+def visualizer_histogram():
+        
+    # Load the full dataset
+    df = pd.read_csv("eval/results/detoxification_evaluation_merged.csv")
+
+    # Count number of samples per model
+    counts = df.groupby("model_id").size().reset_index(name="n")
+
+    # Group by model_id and compute mean and std
+    agg_df = df.groupby("model_id").agg({
+        "toxicity_generated": ["mean", "std"],
+        "similarity_original_generated": ["mean", "std"]
+    }).reset_index()
+
+    # Flatten columns
+    agg_df.columns = [
+        "model_id",
+        "toxicity_generated", "std_toxicity_generated",
+        "similarity_original_generated", "std_similarity_original_generated"
+    ]
+
+    # Merge with sample counts
+    df = agg_df.merge(counts, on="model_id")
+
+    # Drop models with invalid names
+    df = df[~df['model_id'].str.startswith('_')]
+
+    # Compute combined score
+    df['combined_score'] = 0.5 * df['similarity_original_generated'] + 0.5 * (1 - df['toxicity_generated'])
+
+    # Compute standard error of the mean for each
+    df['se_sim'] = df['std_similarity_original_generated'] / np.sqrt(df['n'])
+    df['se_tox'] = df['std_toxicity_generated'] / np.sqrt(df['n'])
+
+    # Compute standard error of the combined score (assuming independence)
+    df['se_combined'] = 0.5 * df['se_sim'] + 0.5 * df['se_tox']
+
+    # Sort by combined score
+    df = df.sort_values(by='combined_score', ascending=False).reset_index(drop=True)
+
+    # Extract values
+    models = df["model_id"]
+    similarity = df["similarity_original_generated"]
+    toxicity = df["toxicity_generated"]
+    combined_score = df["combined_score"]
+    std_sim = df["se_sim"]
+    std_tox = df["se_tox"]
+    std_combined = df["se_combined"]
+
+    # Set up positions
+    x = np.arange(len(models))
+    fig, ax = plt.subplots(figsize=(12, 8), dpi=1000)
+
+    # Plot main combined score with error bars
+    ax.barh(x, combined_score, height=0.6, xerr=std_combined, color='mediumseagreen', label='Combined Score', capsize=4)
+
+    # Add similarity and toxicity with scaled SE error bars
+    ax.barh(x - 0.2, similarity, height=0.2, color='steelblue', label='Similarity', capsize=3)
+    ax.barh(x + 0.2, toxicity, height=0.2, color='darkorange', label='Toxicity', capsize=3)
+
+    # Plot aesthetics
+    ax.set_xlabel('Score')
+    ax.set_title('Model Performance: Combined Score vs. Similarity & Toxicity')
+    ax.set_yticks(x)
+    ax.set_yticklabels(models)
+    ax.invert_yaxis()
+    ax.legend(loc='lower right')
+    plt.grid(axis='x', linestyle='--', alpha=0.4)
+    plt.tight_layout()
+    output_path = "../visualizations/Histogram.png"
+    plt.savefig(output_path, bbox_inches='tight', dpi=300)
 
 
 def is_seq2seq_model(model_id, logger=None):
@@ -312,7 +447,6 @@ def main():
     all_models_to_eval = sft_models + base_models
 
     all_dfs = []
-
     for model_id in tqdm(all_models_to_eval, desc="Evaluating models"):
         try:
             logger.info(f"Evaluating model: {model_id}")
@@ -320,13 +454,30 @@ def main():
             all_dfs.append(df)
         except Exception as e:
             logger.error(f"Failed to evaluate {model_id}: {e}")
+    
 
+    ## create a dummy dataframe to save if no models were evaluated
+    if not all_dfs:
+        logger.warning("No models were evaluated successfully. Creating an empty DataFrame.")
+        all_dfs = [pd.DataFrame(columns=[
+            "model_id", "original_toxic", "toxicity_original", "reference_neutral",
+            "toxicity_reference", "similarity_original_reference", "generated_neutral",
+            "toxicity_generated", "similarity_original_generated"
+        ])]
     if all_dfs:
         final_df = pd.concat(all_dfs, ignore_index=True)
-        final_df.to_csv("detoxification_evaluation_merged.csv", index=False)
-        logger.info("Saved all results to: results/detoxification_evaluation_merged.csv")
+        final_df.to_csv("eval/results/detoxification_evaluation_merged.csv", index=False)
+        logger.info("Saved all results to: eval/results/detoxification_evaluation_merged.csv")
     else:
         logger.warning("No evaluations completed.")
+
+    
+    ## Start visualizaton
+    logger.info("Generating result table and histogram visualizations...")
+    result_table()
+    visualizer_histogram()
+    logger.info("Visualizations saved to ../visualizations/")
+    logger.info("Detoxification evaluation completed successfully.")
 
 
 if __name__ == "__main__":

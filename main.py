@@ -32,7 +32,7 @@ def main(args):
     base_generative = args.base_generative
     count_generative = args.count_generative
 
-    process_dataset_and_split(logger, print_stats=True)
+    process_dataset_and_split(logger, print_stats=False)
     logger.info("Dataset processing and splitting completed.")
     
     if base:
