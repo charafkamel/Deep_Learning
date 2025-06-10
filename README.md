@@ -16,10 +16,10 @@ The repository contains the following directories and files:
 
 #### Directories
 
+- `cleaned_data/` contains the preprocessed data
+- `data/` contains the raw data that we download (paradetox.tsv)
 - `data_preprocessing/` contains scripts for loading and preprocessing datasets.
 - `eval/` includes evaluation routines and performance metrics.
-- `plots/` holds Jupyter notebooks and experiment visualizations.
-- `test/` includes scripts for testing training and inference behavior.
 - `trainer/` implements the training loop and model management.
 - `utils/` provides utility functions used across the project.
 - `visualizatios/` contains a folder with the plots used in our report.
