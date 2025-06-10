@@ -1,0 +1,191 @@
+hf_username: "TarhanE"
+### Weights for our custom DetoxCOUNT loss
+mle_weight:   0.5
+ul_weight:    0.5
+tox_weight:   0
+
+### Training parameters for base model (T5) with base SFT loss (CrossEntropy)
+sft_params_base_enc_dec:
+  output_dir: "outputs/SFT_base"
+  logging_dir: "outputs/logs_sft_base"
+  learning_rate: 0.00005
+  num_train_epochs: 10
+  lr_scheduler_type: "constant"
+  weight_decay: 0.01
+  fp16: False
+  bf16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_steps: 5
+  predict_with_generate: False
+  report_to: ["wandb"]
+  logging_steps: 10
+
+  #batch
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 2
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
+  load_best_model_at_end: True
+  metric_for_best_model: "eval_loss"
+  greater_is_better: False  
+
+### Training parameters for count model (T5) with DetoxCOUNT loss
+sft_params_dcount_enc_dec:
+  output_dir: "outputs/SFT_count"
+  logging_dir: "outputs/logs_sft_count"
+  learning_rate: 0.00005
+  num_train_epochs: 10
+  lr_scheduler_type: "constant"
+  weight_decay: 0.01
+  fp16: False
+  bf16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_steps: 5
+  predict_with_generate: False
+  report_to: ["wandb"]
+  logging_steps: 10
+  
+
+  #batch
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 2
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
+  load_best_model_at_end: True
+  metric_for_best_model: "eval_loss"
+  greater_is_better: False
+
+### Training parameters for base model (Decoder only) with base SFT loss (CrossEntropy)
+sft_params_base_generative:
+  output_dir: "outputs/SFT_generative_base"
+  logging_dir: "outputs/logs_sft_generative_base"
+  learning_rate: 0.00003
+  num_train_epochs: 4
+  lr_scheduler_type: "cosine"
+  weight_decay: 0.01
+  fp16: False
+  bf16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_steps: 5
+  report_to: ["wandb"]
+  logging_steps: 10
+
+  #batch
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 2
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
+  load_best_model_at_end: True
+  metric_for_best_model: "eval_loss"
+  greater_is_better: False  
+
+### Training parameters for count model (T5) with DetoxCOUNT loss
+sft_params_dcount_generative:
+  output_dir: "outputs/SFT_generative_count"
+  logging_dir: "outputs/logs_sft_generative_count"
+  learning_rate: 0.00003
+  num_train_epochs: 4
+  lr_scheduler_type: "cosine"
+  weight_decay: 0.01
+  fp16: False
+  bf16: True
+  fp16_backend: "auto"
+  max_grad_norm: 1
+  warmup_steps: 5
+  report_to: ["wandb"]
+  logging_steps: 10
+  
+
+  #batch
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 16
+  gradient_accumulation_steps: 2
+  
+  # logging
+  logging_steps: 100
+  save_steps: 200
+  save_strategy: "steps"  # Match save and eval strategies
+  save_total_limit: 2
+  
+  #eval
+  eval_steps: 200
+  eval_strategy: "steps"  # Ensure evaluations occur during training
+  push_to_hub: True
+  load_best_model_at_end: True
+  metric_for_best_model: "eval_loss"
+  greater_is_better: False  
+
+grpo_params:
+  output_dir: "outputs/SFT_rl"
+  logging_dir: "outputs/logs_rl"
+  learning_rate : 0.00000001 # 0.000001  ## Előbb egyel nagyobb lr volt!
+  num_train_epochs: 1
+  lr_scheduler_type: "linear"
+  weight_decay: 0.001
+  bf16: True
+  bf16_full_eval: True
+  # batch
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 8
+  num_generations: 4
+  
+  # input / output
+  remove_unused_columns: False
+  max_prompt_length: 512 ## GRPO input length
+  
+  # GRPO params
+  beta: 0.02 # defautl 0.04  trade-off between the policy and value losses.
+
+  ## 0.16.0 params
+  epsilon_high: 0.28 # default 0.2 -> more randomness, exploration
+  num_iterations: 4 # default 1
+
+
+  # logging
+  logging_steps: 5 # 1 gpu 100, 3 gpu 20
+
+  ## Gradient checkpointing
+  gradient_checkpointing: True
+  save_steps: 25
+  save_strategy: "steps"  # Match save and eval strategies
+  resume_from_checkpoint: False
+
+  save_total_limit: 1
+  
+  #Hub
+  push_to_hub: True
+  hub_strategy: "end"
